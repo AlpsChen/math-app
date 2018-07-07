@@ -41,7 +41,10 @@ export default class WelcomePage extends Component {
         this.props.navigation.navigate('Login');
       })
       .catch(error => this.setState({ errorMessage: error.message }));
-    //firebase.database().ref("/users/" + this.state.user.uid).remove();
+    firebase
+      .database()
+      .ref('/users/' + this.state.user.uid)
+      .remove();
     //LoginManager.logOut();
   };
 
@@ -135,8 +138,13 @@ export default class WelcomePage extends Component {
                 onPress={() => {
                   this.setState({ showModal: false });
                   //var tmp = [{src:"https://firebasestorage.googleapis.com/v0/b/myapp1116.appspot.com/o/easy%2Fm7a032102c.jpg?alt=media&token=12e55536-b2ad-43f5-a035-f07897e362f5", ans:"A"}, {src:"https://firebasestorage.googleapis.com/v0/b/myapp1116.appspot.com/o/easy%2Fm7a012101d.jpg?alt=media&token=cf269b41-225a-479b-be28-df1623480d28",ans:"D"}]
-                  //navigate("Second", { displaynum: 1, difficulty: "easy", mode: params.mode, qnums: params.qnums });
-                  navigate('Third', { score: 0 });
+                  navigate('Second', {
+                    displaynum: 1,
+                    difficulty: 'easy',
+                    mode: params.mode,
+                    qnums: params.qnums
+                  });
+                  //navigate('Third', { score: 0 });
                 }}
               >
                 <Text style={{ fontSize: 20 }}>確定</Text>

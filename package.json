@@ -18,6 +18,7 @@
     "react-native-slider": "^0.11.0",
     "react-native-swiper": "^1.5.13",
     "react-native-vector-icons": "^4.6.0",
-    "react-navigation": "^2.6.2"
+    "react-navigation": "^2.6.2",
+    "rn-draw": "0.0.6"
   }
 }

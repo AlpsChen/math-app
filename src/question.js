@@ -22,6 +22,7 @@ import EIcon from 'react-native-vector-icons/Entypo';
 import SketchDraw from 'react-native-sketch-draw';
 import Drawer from 'react-native-drawer';
 import MathJax from 'react-native-mathjax';
+import RNDraw from 'rn-draw';
 
 const iosConfig = {
   clientId:
@@ -74,7 +75,7 @@ export default class QuestionPage extends Component {
       showModal: false, // true to show modal (計算紙)
       mark: false // true if current question is marked
     };
-    Orientation.lockToLandscape();
+    //Orientation.lockToLandscape();
     chosenEasy.fill(false);
     chosenMedium.fill(false);
     chosenHard.fill(false);

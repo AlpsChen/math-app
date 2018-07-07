@@ -10,7 +10,7 @@ import {
   Keyboard,
   Dimensions
 } from 'react-native';
-import * as firebase from 'firebase';
+import firebase from 'firebase';
 import {
   AccessToken,
   LoginManager,
@@ -21,8 +21,10 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 //import Orientation from 'react-native-orientation';
 import * as Progress from 'react-native-progress';
+import Expo from 'expo';
 
 const { height, width } = Dimensions.get('screen');
+const appId = '476487499464586';
 
 export default class SignUp extends Component {
   state = {
@@ -46,7 +48,7 @@ export default class SignUp extends Component {
       .auth()
       .signInWithEmailAndPassword(this.state.email, this.state.password)
       .then(() => {
-        this.setState({ loading: false });
+        this.setState({ loading: false, email: '', password: '' });
         this.props.navigation.navigate('First', { mode: 0, qnums: 10 });
       })
       .catch(error =>
@@ -54,67 +56,40 @@ export default class SignUp extends Component {
       );
   };
 
-  loginFb = () => {
-    LoginManager.logInWithReadPermissions(['public_profile', 'email'])
-      .then(result => {
-        if (result.isCancelled) {
-          return Promise.reject(new Error('The user cancelled the request'));
-        }
-        return AccessToken.getCurrentAccessToken();
-      })
-      .then(data => {
-        this.setState({ loading: true });
-        const credential = firebase.auth.FacebookAuthProvider.credential(
-          data.accessToken
-        );
-        const responseInfoCallback = (error, result) => {
-          if (error) {
-            alert('Error fetching data: ' + error.toString());
-          } else {
-            console.warn('Success fetching data: ' + result.toString());
-            this.setState({
-              username: result.first_name
+  async loginFb() {
+    const { type, token } = await Expo.Facebook.logInWithReadPermissionsAsync(
+      appId,
+      {
+        permissions: ['public_profile', 'email', 'user_friends']
+      }
+    );
+    if (type === 'success') {
+      // Get the user's name using Facebook's Graph API
+      const response = await fetch(
+        `https://graph.facebook.com/me?access_token=${token}&fields=id,first_name,email,about,picture`
+      );
+      const json = await response.json();
+      const credential = firebase.auth.FacebookAuthProvider.credential(token);
+      //console.log(json);
+      this.setState({ loading: true });
+      firebase
+        .auth()
+        .signInAndRetrieveDataWithCredential(credential)
+        .then(() => {
+          firebase
+            .database()
+            .ref('users')
+            .child(firebase.auth().currentUser.uid)
+            .set({
+              username: json.first_name
             });
-          }
-        };
-        const infoRequest = new GraphRequest(
-          '/me',
-          {
-            accessToken: data.accessToken,
-            parameters: {
-              fields: {
-                string: 'first_name'
-              }
-            }
-          },
-          responseInfoCallback
-        );
-        new GraphRequestManager().addRequest(infoRequest).start();
-
-        return firebase.auth().signInWithCredential(credential);
-      })
-      .then(() => {
-        firebase
-          .database()
-          .ref('users')
-          .child(firebase.auth().currentUser.uid)
-          .set({
-            username: this.state.username
-          });
-      })
-      .then(() => {
-        this.setState({ loading: false });
-        this.props.navigation.navigate('First', {
-          FbUsername: this.state.username
+        })
+        .then(() => {
+          this.setState({ loading: false });
+          this.props.navigation.navigate('First', { mode: 0, qnums: 10 });
         });
-      })
-      .catch(error => {
-        this.setState({
-          errorMessage: error.message,
-          loading: false
-        });
-      });
-  };
+    }
+  }
   render() {
     return (
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -134,7 +109,7 @@ export default class SignUp extends Component {
             returnKeyType={'next'}
             autoCapitalize={'none'}
             style={styles.textInput}
-            onChangeText={email => this.setState({ email })}
+            onChangeText={email => this.setState({ email, errorMessage: '' })}
             value={this.state.email}
             onSubmitEditing={() => {
               this.gotopassword.focus();
@@ -147,7 +122,9 @@ export default class SignUp extends Component {
             returnKeyType={'go'}
             autoCapitalize={'none'}
             style={styles.textInput}
-            onChangeText={password => this.setState({ password })}
+            onChangeText={password =>
+              this.setState({ password, errorMessage: '' })
+            }
             value={this.state.password}
             ref={input => {
               this.gotopassword = input;
@@ -158,14 +135,20 @@ export default class SignUp extends Component {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.button}
-            onPress={() => this.props.navigation.navigate('SignUp')}
+            onPress={() => {
+              this.props.navigation.navigate('SignUp');
+              this.setState({
+                email: '',
+                password: ''
+              });
+            }}
           >
             <Text style={styles.text}>註冊</Text>
           </TouchableOpacity>
           <Icon
             name="logo-facebook"
             color="#3b5998"
-            onPress={this.loginFb}
+            onPress={this.loginFb.bind(this)}
             size={50}
             style={styles.fbButton}
           />

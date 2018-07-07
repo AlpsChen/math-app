@@ -11,13 +11,15 @@ import {
 } from 'react-native';
 import * as firebase from 'firebase';
 //import Orientation from 'react-native-orientation';
+import * as Progress from 'react-native-progress';
 
 export default class SignUp extends Component {
   state = {
     email: '',
     password: '',
     errorMessage: null,
-    username: ''
+    username: '',
+    loading: false
   };
   static navigationOptions = {
     header: null,
@@ -28,20 +30,31 @@ export default class SignUp extends Component {
   }
 
   handleSignUp = () => {
+    // this.setState({
+    //   loading: true
+    // });
     firebase
       .auth()
       .createUserWithEmailAndPassword(this.state.email, this.state.password)
-      .then(user => {
+      .then(() => {
         firebase
           .database()
           .ref('users')
-          .child(user.uid)
+          .child(firebase.auth().currentUser.uid)
           .set({
             username: this.state.username
           });
+        //this.setState({ loading: false });
+        console.log('a');
         this.props.navigation.navigate('First', { mode: 0, qnums: 10 });
+        console.log('b');
       })
-      .catch(error => this.setState({ errorMessage: error.message }));
+      .catch(error =>
+        this.setState({
+          errorMessage: error.message,
+          loading: false
+        })
+      );
   };
 
   render() {
@@ -62,7 +75,9 @@ export default class SignUp extends Component {
             returnKeyType={'next'}
             autoCapitalize={'none'}
             style={styles.textInput}
-            onChangeText={username => this.setState({ username })}
+            onChangeText={username =>
+              this.setState({ username, errorMessage: '' })
+            }
             value={this.state.username}
             onSubmitEditing={() => {
               this.gotoemail.focus();
@@ -73,7 +88,7 @@ export default class SignUp extends Component {
             returnKeyType={'next'}
             autoCapitalize={'none'}
             style={styles.textInput}
-            onChangeText={email => this.setState({ email })}
+            onChangeText={email => this.setState({ email, errorMessage: '' })}
             value={this.state.email}
             onSubmitEditing={() => {
               this.gotopassword.focus();
@@ -89,7 +104,9 @@ export default class SignUp extends Component {
             returnKeyType={'go'}
             autoCapitalize={'none'}
             style={styles.textInput}
-            onChangeText={password => this.setState({ password })}
+            onChangeText={password =>
+              this.setState({ password, errorMessage: '' })
+            }
             value={this.state.password}
             ref={input => {
               this.gotopassword = input;
@@ -104,6 +121,20 @@ export default class SignUp extends Component {
           >
             <Text style={styles.text}>已有帳號？</Text>
           </TouchableOpacity>
+          <View
+            style={{
+              position: 'absolute',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}
+          >
+            <Progress.CircleSnail
+              animating={this.state.loading}
+              hidesWhenStopped
+              size={70}
+              thickness={5}
+            />
+          </View>
         </KeyboardAvoidingView>
       </TouchableWithoutFeedback>
     );

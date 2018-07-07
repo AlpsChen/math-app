@@ -9,6 +9,8 @@
     "version": "1.0.0",
     "orientation": "landscape",
     "icon": "./assets/icon.png",
+    "facebookScheme": "fb476487499464586",
+    "facebookDisplayName": "wochichiang",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",

@@ -22,6 +22,7 @@ import EIcon from 'react-native-vector-icons/Entypo';
 import SketchDraw from 'react-native-sketch-draw';
 import Drawer from 'react-native-drawer';
 import MathJax from 'react-native-mathjax';
+import RNDraw from 'rn-draw';
 
 const iosConfig = {
   clientId:
@@ -38,7 +39,6 @@ var chosenEasy = [100],
   chosenMedium = [100],
   chosenHard = [100];
 const bgcolor = '#FFE4B5';
-const sdc = SketchDraw.constants;
 const { height, width } = Dimensions.get('screen');
 
 // const ImageHeader = props => {
@@ -70,11 +70,11 @@ export default class QuestionPage extends Component {
       renew: false, // true to refresh the question display and buttons
       correct: false, // true if answered correctly
       penColor: '#87CEFA', // pen color (default is light blue)
-      tool: sdc.toolType.pen.id, // default tool is pen
       showModal: false, // true to show modal (計算紙)
+      tool: 'pen',
       mark: false // true if current question is marked
     };
-    Orientation.lockToLandscape();
+    //Orientation.lockToLandscape();
     chosenEasy.fill(false);
     chosenMedium.fill(false);
     chosenHard.fill(false);
@@ -383,10 +383,10 @@ export default class QuestionPage extends Component {
           <EIcon
             name={'pencil'}
             size={35}
-            color={this.state.tool === sdc.toolType.pen.id ? '#808080' : '#000'}
+            color={this.state.tool === 'pen' ? '#808080' : '#000'}
             onPress={() => {
               this.setState({
-                tool: sdc.toolType.pen.id
+                tool: 'pen'
               });
             }}
             style={{ marginTop: 5 }}
@@ -411,13 +411,10 @@ export default class QuestionPage extends Component {
           <EIcon
             name={'eraser'}
             size={35}
-            color={
-              this.state.tool == sdc.toolType.eraser.id ? '#808080' : '#000'
-            }
+            color={this.state.tool === 'undo' ? '#808080' : '#000'}
             onPress={() => {
-              this.setState({
-                tool: sdc.toolType.eraser.id
-              });
+              this._undo;
+              this.setState({ tool: 'undo' });
             }}
           />
           <MCIcon
@@ -425,7 +422,7 @@ export default class QuestionPage extends Component {
             size={35}
             color={'#000'}
             onPress={() => {
-              this.refs.sketchRef.clearSketch();
+              this._clear;
             }}
           />
 
@@ -435,13 +432,17 @@ export default class QuestionPage extends Component {
           {this.renderColorButton('#FF6347')}
           {this.renderColorButton('#87CEFA')}
         </View>
-        <SketchDraw
-          style={[{ flex: 5, height: 300 }, styles.drawer]}
-          ref="sketchRef"
-          selectedTool={this.state.tool}
-          toolColor={this.state.penColor}
-          //onSaveSketch={this.onSketchSave.bind(this)}
-          //localSourceImagePath={this.props.localSourceImagePath}
+        <RNDraw
+          containerStyle={{ backgroundColor: 'transparent' }}
+          rewind={undo => {
+            this._undo = undo;
+          }}
+          clear={clear => {
+            this._clear = clear;
+          }}
+          color={this.state.penColor}
+          strokeWidth={4}
+          onChangeStrokes={strokes => console.log(strokes)}
         />
       </View>
     );

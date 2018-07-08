@@ -12,17 +12,20 @@ import {
   ScrollView,
   Platform,
   TouchableHighlight
+  //Slider
 } from 'react-native';
 import * as firebase from 'firebase';
 import ChoiceButton from './components/choicebutton';
 import MCIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import FIcon from 'react-native-vector-icons/Foundation';
 import EIcon from 'react-native-vector-icons/Entypo';
+import FAIcon from 'react-native-vector-icons/FontAwesome';
 //import Orientation from 'react-native-orientation';
 import SketchDraw from 'react-native-sketch-draw';
 import Drawer from 'react-native-drawer';
 import MathJax from 'react-native-mathjax';
 import RNDraw from 'rn-draw';
+import Slider from 'react-native-slider';
 
 const iosConfig = {
   clientId:
@@ -63,6 +66,8 @@ export default class QuestionPage extends Component {
     this.difficulty = 'easy'; // current difficulty
     this.index = 0; // index of current question in Firebase
     this.marked = []; // records the marked questions
+    this._undo;
+    this._clear;
     this.state = {
       data: '', // data of current question
       total: 0, // total question of current difficulty
@@ -71,7 +76,7 @@ export default class QuestionPage extends Component {
       correct: false, // true if answered correctly
       penColor: '#87CEFA', // pen color (default is light blue)
       showModal: false, // true to show modal (計算紙)
-      tool: 'pen',
+      thickness: 5,
       mark: false // true if current question is marked
     };
     //Orientation.lockToLandscape();
@@ -94,7 +99,7 @@ export default class QuestionPage extends Component {
         ? '題目：' + params.displaynum + '/' + params.qnums
         : null,
       headerStyle: {
-        backgroundColor: '#FAFAD2'
+        backgroundColor: bgcolor
       },
       //header: <ImageHeader/>,
       headerLeft: (
@@ -372,15 +377,34 @@ export default class QuestionPage extends Component {
           flexDirection: 'row'
         }}
       >
+        <RNDraw
+          containerStyle={styles.sketch}
+          rewind={undo => {
+            this._undo = undo;
+          }}
+          clear={clear => {
+            this._clear = clear;
+          }}
+          color={this.state.penColor}
+          strokeWidth={this.state.thickness}
+          onChangeStrokes={strokes => console.log(strokes)}
+        />
         <View
           style={{
             flex: 0.5,
             flexDirection: 'column',
-            backgroundColor: '#FFE4B5',
-            alignItems: 'center'
+            backgroundColor: '#FFE4B5'
+            //alignItems: 'center'
           }}
         >
-          <EIcon
+          <View
+            style={{
+              flex: 6,
+              justifyContent: 'space-around',
+              alignItems: 'center'
+            }}
+          >
+            {/* <EIcon
             name={'pencil'}
             size={35}
             color={this.state.tool === 'pen' ? '#808080' : '#000'}
@@ -389,61 +413,46 @@ export default class QuestionPage extends Component {
                 tool: 'pen'
               });
             }}
-            style={{ marginTop: 5 }}
-          />
+            
+          /> */}
 
-          {/* <TouchableHighlight
-      underlayColor={"#CCC"}
-      style={{
-        flex: 1,
-        alignItems: "center",
-        paddingVertical: 20,
-        borderLeftWidth: 1,
-        borderRightWidth: 1,
-        borderColor: "#DDD"
-      }}
-      onPress={() => {
-        this.refs.sketchRef.saveSketch();
-      }}
-    >
-      <Text style={{ color: "#888", fontWeight: "600" }}>SAVE</Text>
-    </TouchableHighlight> */}
-          <EIcon
-            name={'eraser'}
-            size={35}
-            color={this.state.tool === 'undo' ? '#808080' : '#000'}
-            onPress={() => {
-              this._undo;
-              this.setState({ tool: 'undo' });
-            }}
-          />
-          <MCIcon
-            name={'delete'}
-            size={35}
-            color={'#000'}
-            onPress={() => {
-              this._clear;
-            }}
-          />
+            <FAIcon
+              name={'undo'}
+              size={30}
+              color={'#000'}
+              onPress={this._undo}
+              style={{ marginTop: 10 }}
+            />
+            <MCIcon
+              name={'delete'}
+              size={35}
+              color={'#000'}
+              onPress={this._clear}
+              style={{ marginTop: 5 }}
+            />
 
-          {/* </View> */}
-          {/* <View style={{ flex: 0.5, flexDirection: "column", backgroundColor: "#FFE4B5" }}> */}
-          {this.renderColorButton('#008000')}
-          {this.renderColorButton('#FF6347')}
-          {this.renderColorButton('#87CEFA')}
+            {/* </View> */}
+            {/* <View style={{ flex: 0.5, flexDirection: "column", backgroundColor: "#FFE4B5" }}> */}
+            {this.renderColorButton('#008000')}
+            {this.renderColorButton('#FF6347')}
+            {this.renderColorButton('#87CEFA')}
+          </View>
+          <View style={{ flex: 3, justifyContent: 'center' }}>
+            <Slider
+              value={this.state.thickness}
+              onValueChange={value => this.setState({ thickness: value })}
+              orientation="vertical"
+              step={1}
+              minimumValue={2}
+              maximumValue={8}
+              thumbStyle={{ size: 10 }}
+              style={{
+                transform: [{ rotateZ: '90deg' }]
+                //flex: 3
+              }}
+            />
+          </View>
         </View>
-        <RNDraw
-          containerStyle={{ backgroundColor: 'transparent' }}
-          rewind={undo => {
-            this._undo = undo;
-          }}
-          clear={clear => {
-            this._clear = clear;
-          }}
-          color={this.state.penColor}
-          strokeWidth={4}
-          onChangeStrokes={strokes => console.log(strokes)}
-        />
       </View>
     );
   };
@@ -660,6 +669,10 @@ const styles = StyleSheet.create({
     //borderRadius: 5,
     borderColor: bgcolor
     //shadowRadius: 3
+  },
+  sketch: {
+    flex: 5,
+    backgroundColor: 'rgba(0,0,0,0.2)'
   },
   colorButton: {
     borderRadius: 50,

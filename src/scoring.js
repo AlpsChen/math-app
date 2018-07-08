@@ -4,12 +4,15 @@ import {
   StyleSheet,
   Text,
   View,
-  ImageBackground
+  ImageBackground,
+  Image
 } from 'react-native';
 import * as Progress from 'react-native-progress';
+import { Asset } from 'expo';
 //import Orientation from 'react-native-orientation';
 
 const bgcolor = '#F5FCFF';
+const bgImage = require('../assets/scoringImage.jpg');
 
 export default class ScoringPage extends Component {
   constructor(props) {
@@ -26,7 +29,7 @@ export default class ScoringPage extends Component {
   };
 
   componentWillMount() {
-    //Orientation.lockToLandscape();
+    Expo.Asset.fromModule(bgImage).downloadAsync();
   }
 
   componentDidMount() {
@@ -61,7 +64,7 @@ export default class ScoringPage extends Component {
     return (
       <View style={styles.bg}>
         <ImageBackground
-          source={require('../assets/scoringImage.jpeg')}
+          source={bgImage}
           style={styles.bgImage}
           imageStyle={{ resizeMode: 'cover' }}
         >
@@ -95,7 +98,7 @@ export default class ScoringPage extends Component {
                   {
                     backgroundColor: this.state.finished
                       ? '#FFE4B5'
-                      : 'transparant'
+                      : 'transparent'
                   }
                 ]}
               >

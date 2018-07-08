@@ -47,7 +47,7 @@ const { height, width } = Dimensions.get('screen');
 // const ImageHeader = props => {
 //   return (
 //     <View
-//     //style={{height: 10*vh, justifyContent: 'flex-end', padding: 5, backgroundColor: 'transparent'}}
+//     //style={{height: 10*vh, justifyContent: 'flex-end', padding: 5}}
 //     >
 //       <Image
 //         style={{ width: '100%', height: 50 }}

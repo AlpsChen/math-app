@@ -1,52 +1,69 @@
-import React, { Component } from "react";
-import { Platform, StyleSheet, Text, View } from "react-native";
+import React, { Component } from 'react';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 
-import { StackNavigator } from "react-navigation";
-import WelcomePage from "./src/welcome";
-import QuestionPage from "./src/question";
-import ScoringPage from "./src/scoring";
-import Loading from "./src/login/loading";
-import SignUp from "./src/login/signup";
-import Login from "./src/login/login";
-import ModePage from "./src/mode";
-import ReviewPage from "./src/review";
-import HeaderBackButton from "react-navigation/src/views/Header/HeaderBackButton";
+import { createStackNavigator } from 'react-navigation';
+import WelcomePage from './src/welcome';
+import QuestionPage from './src/question';
+import ScoringPage from './src/scoring';
+import Loading from './src/login/loading';
+import SignUp from './src/login/signup';
+import Login from './src/login/login';
+import ModePage from './src/mode';
+import ReviewPage from './src/review';
+import HeaderBackButton from 'react-navigation/src/views/Header/HeaderBackButton';
+import * as firebase from 'firebase';
 
-const Navigation = StackNavigator(
-  {
-    First: { screen: WelcomePage },
-    Second: { screen: QuestionPage },
-    Third: { screen: ScoringPage },
-    Loading,
-    SignUp,
-    Login,
-    ModePage,
-    ReviewPage,
-  },
-  {
-    initialRouteName: "Loading"
+const routeConfig = {
+  First: { screen: WelcomePage },
+  Second: { screen: QuestionPage },
+  Third: { screen: ScoringPage },
+  Loading,
+  SignUp,
+  Login,
+  ModePage,
+  ReviewPage
+};
+const FirstNavigation = createStackNavigator(routeConfig, {
+  initialRouteName: 'First'
+});
+const LoginNavigation = createStackNavigator(routeConfig, {
+  initialRouteName: 'Login'
+});
+
+export default class App extends Component {
+  state = {
+    initialRoute: ''
+  };
+
+  componentDidMount() {
+    firebase.auth().onAuthStateChanged(user => {
+      this.setState({ initialRoute: user ? 'First' : 'Login' });
+    });
   }
-);
-
-console.disableYellowBox = true;
+  render() {
+    console.disableYellowBox = true;
+    if (this.state.initialRoute === 'First') return <FirstNavigation />;
+    else if (this.state.initialRoute === 'Login') return <LoginNavigation />;
+    else return null;
+    //return null;
+  }
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F5FCFF"
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5FCFF'
   },
   welcome: {
     fontSize: 20,
-    textAlign: "center",
+    textAlign: 'center',
     margin: 10
   },
   instructions: {
-    textAlign: "center",
-    color: "#333333",
+    textAlign: 'center',
+    color: '#333333',
     marginBottom: 5
   }
 });
-
-export default Navigation;

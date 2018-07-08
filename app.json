@@ -12,7 +12,7 @@
     "facebookScheme": "fb476487499464586",
     "facebookDisplayName": "wochichiang",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/splashImage.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },

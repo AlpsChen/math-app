@@ -33,6 +33,10 @@ export default class WelcomePage extends Component {
     gesturesEnabled: false
   };
 
+  componentWillMount() {
+    //this.props.navigation.setParams({mode: 0})
+  }
+
   signOut = () => {
     firebase
       .auth()
@@ -75,8 +79,8 @@ export default class WelcomePage extends Component {
   }
 
   render() {
-    const { navigate } = this.props.navigation;
-    const { params } = this.props.navigation.state;
+    const { navigate, getParam } = this.props.navigation;
+    //const { params } = this.props.navigation.state;
     //console.warn(this.state.user.uid)
     this.getUsername();
     return (
@@ -104,8 +108,8 @@ export default class WelcomePage extends Component {
             <TouchableOpacity
               onPress={() => {
                 navigate('ModePage', {
-                  initialMode: params.mode,
-                  initialQnums: params.qnums
+                  initialMode: getParam('mode', 0),
+                  initialQnums: getParam('qnums', 10)
                 });
               }}
               style={styles.button}
@@ -130,21 +134,23 @@ export default class WelcomePage extends Component {
           >
             <View style={styles.modal}>
               <View>
-                <Text style={styles.modalText}>{texts[params.mode]}</Text>
-                <Text style={styles.modalText}>{params.qnums}題</Text>
+                <Text style={styles.modalText}>
+                  {texts[getParam('mode', 0)]}
+                </Text>
+                <Text style={styles.modalText}>{getParam('qnums', 10)}題</Text>
               </View>
               <TouchableOpacity
                 style={styles.modalButton}
                 onPress={() => {
                   this.setState({ showModal: false });
                   //var tmp = [{src:"https://firebasestorage.googleapis.com/v0/b/myapp1116.appspot.com/o/easy%2Fm7a032102c.jpg?alt=media&token=12e55536-b2ad-43f5-a035-f07897e362f5", ans:"A"}, {src:"https://firebasestorage.googleapis.com/v0/b/myapp1116.appspot.com/o/easy%2Fm7a012101d.jpg?alt=media&token=cf269b41-225a-479b-be28-df1623480d28",ans:"D"}]
-                  navigate('Second', {
-                    displaynum: 1,
-                    difficulty: 'easy',
-                    mode: params.mode,
-                    qnums: params.qnums
-                  });
-                  //navigate('Third', { score: 0 });
+                  // navigate('Second', {
+                  //   displaynum: 1,
+                  //   difficulty: 'easy',
+                  //   mode: params.mode,
+                  //   qnums: params.qnums
+                  // });
+                  navigate('Third', { score: 0.2 });
                 }}
               >
                 <Text style={{ fontSize: 20 }}>確定</Text>
@@ -187,7 +193,7 @@ const styles = StyleSheet.create({
   },
   modal: {
     flex: 1,
-    marginHorizontal: '35%',
+    marginHorizontal: '37%',
     marginVertical: '5%',
     backgroundColor: '#FFFFE0',
     borderRadius: 10,

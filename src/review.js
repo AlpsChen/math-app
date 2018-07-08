@@ -33,7 +33,7 @@ export default class ReviewPage extends Component {
     let qnums = params.marked.length;
     for (let i = 0; i < qnums; i++) {
       this.question(i);
-      console.log(i);
+      //console.log(i);
     }
   }
 
@@ -79,7 +79,7 @@ export default class ReviewPage extends Component {
         </View>
       );
     }
-    console.log(tmp);
+    //console.log(tmp);
     return tmp;
   };
 
@@ -93,7 +93,7 @@ export default class ReviewPage extends Component {
           renderPagination={this.renderPagination.bind(this)}
           loop={false}
         >
-          {this.renderMarked()}
+          {/* {this.renderMarked()} */}
         </Swiper>
       </View>
     );

@@ -38,9 +38,7 @@ export default class SignUp extends Component {
     header: null,
     gesturesEnabled: false
   };
-  componentWillMount() {
-    //Orientation.lockToLandscape();
-  }
+  componentWillMount() {}
 
   handleLogin = () => {
     this.setState({ loading: true });
@@ -49,7 +47,7 @@ export default class SignUp extends Component {
       .signInWithEmailAndPassword(this.state.email, this.state.password)
       .then(() => {
         this.setState({ loading: false, email: '', password: '' });
-        this.props.navigation.navigate('First', { mode: 0, qnums: 10 });
+        this.props.navigation.navigate('First');
       })
       .catch(error =>
         this.setState({ errorMessage: error.message, loading: false })

@@ -46,7 +46,7 @@ export default class SignUp extends Component {
           });
         //this.setState({ loading: false });
         console.log('a');
-        this.props.navigation.navigate('First', { mode: 0, qnums: 10 });
+        this.props.navigation.navigate('First');
         console.log('b');
       })
       .catch(error =>

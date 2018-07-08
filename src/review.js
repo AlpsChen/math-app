@@ -11,15 +11,22 @@ import Swiper from 'react-native-swiper';
 import * as firebase from 'firebase';
 const { width } = Dimensions.get('window');
 
+const Slide = props => {
+  return (
+    <View style={styles.slide}>
+      <ScrollView>
+        <Text style={styles.text}>{JSON.parse(props.data).content}</Text>
+      </ScrollView>
+    </View>
+  );
+};
+
 export default class ReviewPage extends Component {
   constructor(props) {
     super(props);
-    this.index = 0;
-    this.difficulty = '';
-    //this.arr = [];
     this.state = {
-      data: '',
-      arr: [1]
+      data: ''
+      //arr: ['a', 'b']
     };
   }
 
@@ -28,14 +35,13 @@ export default class ReviewPage extends Component {
     gesturesEnabled: false
   };
 
-  componentWillMount() {
-    let { params } = this.props.navigation.state;
-    let qnums = params.marked.length;
-    for (let i = 0; i < qnums; i++) {
-      this.question(i);
-      //console.log(i);
-    }
-  }
+  // componentDidMount() {
+  //   let { params } = this.props.navigation.state;
+  //   let qnums = params.marked.length;
+  //   for (let i = 0; i < qnums; i++) {
+  //     this.question(i);
+  //   }
+  // }
 
   renderPagination = (index, total, context) => {
     return (
@@ -46,54 +52,29 @@ export default class ReviewPage extends Component {
       </View>
     );
   };
-  question = i => {
-    let { params } = this.props.navigation.state;
-    let difficulty = params.marked[i].difficulty;
-    let index = params.marked[i].index;
-    firebase
-      .database()
-      .ref('/questionBank/' + difficulty + '/' + index)
-      .once('value')
-      .then(snap => {
-        this.setState({
-          data: snap.val()
-        });
-      })
-      .then(() => {
-        this.setState(prevState => {
-          arr: [prevState, this.state.data];
-        });
-        //this.state.arr.push(this.state.data)
-        console.log('b');
-      });
-  };
+
+  question = i => {};
 
   renderMarked = () => {
     var tmp = [];
     for (let i = 0; i < this.state.arr.length; i++) {
-      tmp.push(
-        <View style={styles.slide}>
-          <ScrollView>
-            <Text style={styles.text}>{this.state.arr[i].content}</Text>
-          </ScrollView>
-        </View>
-      );
+      tmp.push();
     }
     //console.log(tmp);
     return tmp;
   };
 
   render() {
-    var { params } = this.props.navigation.state;
+    var { marked } = this.props.navigation.state.params;
     return (
       <View style={styles.slide}>
         {/* {qnums?  */}
         <Swiper
           style={styles.wrapper}
-          renderPagination={this.renderPagination.bind(this)}
-          loop={false}
+          renderPagination={this.renderPagination}
+          loop
         >
-          {/* {this.renderMarked()} */}
+          {marked.map((item, i) => <Slide data={item} />)}
         </Swiper>
       </View>
     );

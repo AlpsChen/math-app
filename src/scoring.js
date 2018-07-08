@@ -9,17 +9,19 @@ import {
 } from 'react-native';
 import * as Progress from 'react-native-progress';
 import { Asset } from 'expo';
-//import Orientation from 'react-native-orientation';
+import * as firebase from 'firebase';
 
 const bgcolor = '#F5FCFF';
 const bgImage = require('../assets/scoringImage.jpg');
+var arr = [];
 
 export default class ScoringPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
       score: 0,
-      finished: false
+      finished: false,
+      downloadFinished: false
     };
   }
 
@@ -58,8 +60,39 @@ export default class ScoringPage extends Component {
       }, 100);
     }, 1500);
   }
+
+  addMarked() {
+    let { marked } = this.props.navigation.state.params;
+    let { navigate } = this.props.navigation;
+    if (marked.length == 0) {
+    } else {
+      for (let i = 0; i < marked.length; i++) {
+        let difficulty = marked[i].difficulty;
+        let index = marked[i].index;
+        firebase
+          .database()
+          .ref('/questionBank/' + difficulty + '/' + index)
+          .once('value')
+          .then(snap => {
+            arr.push(JSON.stringify(snap.val()));
+            if (i == marked.length - 1) {
+              this.setState({
+                downloadFinished: true
+              });
+            }
+          });
+      }
+      if (this.state.downloadFinished) {
+        //console.log(arr);
+        navigate('ReviewPage', {
+          marked: arr
+        });
+      }
+    }
+  }
+
   render() {
-    const { navigate } = this.props.navigation;
+    let { navigate } = this.props.navigation;
     let { params } = this.props.navigation.state;
     return (
       <View style={styles.bg}>
@@ -85,14 +118,7 @@ export default class ScoringPage extends Component {
             </View>
             <View style={{ flexDirection: 'row' }}>
               <TouchableOpacity
-                onPress={() => {
-                  navigate('ReviewPage', {
-                    marked: [
-                      { difficulty: 'easy', index: 1 },
-                      { difficulty: 'easy', index: 2 }
-                    ]
-                  });
-                }}
+                onPress={this.addMarked.bind(this)}
                 style={[
                   styles.button,
                   {

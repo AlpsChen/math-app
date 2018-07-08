@@ -92,12 +92,10 @@ export default class QuestionPage extends Component {
   }
 
   static navigationOptions = ({ navigation }) => {
-    const { params } = navigation.state;
+    const { getParam } = navigation;
     var mark = false;
     return {
-      title: params.displaynum
-        ? '題目：' + params.displaynum + '/' + params.qnums
-        : null,
+      title: '題目：' + getParam('displaynum', 1) + '/' + getParam('qnums', 10),
       headerStyle: {
         backgroundColor: bgcolor
       },

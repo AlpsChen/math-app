@@ -5,13 +5,11 @@ import { createStackNavigator } from 'react-navigation';
 import WelcomePage from './src/welcome';
 import QuestionPage from './src/question';
 import ScoringPage from './src/scoring';
-// import Loading from './src/login/loading';
-// import SignUp from './src/login/signup';
-// import Login from './src/login/login';
 import ModePage from './src/mode';
 import ReviewPage from './src/review';
 import Onboarding from './src/onboarding';
 import AccountPage from './src/account';
+import checkIfFirstLaunch from './src/components/checkIfFirstLaunch';
 //import HeaderBackButton from 'react-navigation/src/views/Header/HeaderBackButton';
 import * as firebase from 'firebase';
 
@@ -35,8 +33,15 @@ const LoginNavigation = createStackNavigator(routeConfig, {
 
 export default class App extends Component {
   state = {
-    initialRoute: ''
+    initialRoute: '',
+    isFirstLaunch: false,
+    checkedAsyncStorage: false
   };
+
+  async componentWillMount() {
+    const isFirstLaunch = await checkIfFirstLaunch();
+    this.setState({ isFirstLaunch, checkedAsyncStorage: true });
+  }
 
   componentDidMount() {
     firebase.auth().onAuthStateChanged(user => {
@@ -45,8 +50,13 @@ export default class App extends Component {
   }
   render() {
     console.disableYellowBox = true;
-    if (this.state.initialRoute === 'First') return <FirstNavigation />;
-    else if (this.state.initialRoute === 'Login') return <LoginNavigation />;
+    const { checkedAsyncStorage, isFirstLaunch, initialRoute } = this.state;
+    if (!checkedAsyncStorage) {
+      return null;
+    }
+    if (isFirstLaunch) return <Onboarding />;
+    else if (initialRoute === 'First') return <FirstNavigation />;
+    else if (initialRoute === 'Login') return <LoginNavigation />;
     else return null;
   }
 }

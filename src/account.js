@@ -491,31 +491,33 @@ export default class AccountPage extends Component {
                   }
                 />
               ) : null}
-              <View style={{ flexDirection: 'row' }}>
-                <Button
-                  buttonStyle={styles.loginButton}
-                  containerStyle={{
-                    marginTop: 32,
-                    flex: 0,
-                    alignItems: 'center'
-                  }}
-                  activeOpacity={0.8}
-                  title={isLoginPage ? '登入' : '註冊'}
-                  onPress={isLoginPage ? this.login : this.signUp}
-                  titleStyle={styles.loginTextButton}
-                  loading={this.state.isLoading}
-                  disabled={this.state.isLoading}
+              {/* <View style={{ flexDirection: 'row' }}> */}
+
+              {isLoginPage ? (
+                <IIcon
+                  name="logo-facebook"
+                  color="#3b5998"
+                  onPress={this.loginFb.bind(this)}
+                  size={50}
+                  style={styles.fbButton}
+                  borderRadius={10}
                 />
-                {isLoginPage ? (
-                  <IIcon
-                    name="logo-facebook"
-                    color="#3b5998"
-                    onPress={this.loginFb.bind(this)}
-                    size={50}
-                    style={styles.fbButton}
-                  />
-                ) : null}
-              </View>
+              ) : null}
+              <Button
+                buttonStyle={styles.loginButton}
+                containerStyle={{
+                  marginTop: 5,
+                  flex: 0,
+                  alignItems: 'center'
+                }}
+                activeOpacity={0.8}
+                title={isLoginPage ? '登入' : '註冊'}
+                onPress={isLoginPage ? this.login : this.signUp}
+                titleStyle={styles.loginTextButton}
+                loading={this.state.isLoading}
+                disabled={this.state.isLoading}
+              />
+              {/* </View> */}
             </View>
             {/* </KeyboardAvoidingView> */}
 
@@ -575,10 +577,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'white'
   },
   fbButton: {
-    marginTop: 32,
+    marginTop: 15,
     //marginLeft: 50,
-    position: 'absolute',
-    left: 230
+    //position: 'absolute',
+    //left: 230
+    borderRadius: 20
   },
   loginTextButton: {
     fontSize: 20,
@@ -598,7 +601,7 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     backgroundColor: 'white',
-    width: SCREEN_WIDTH - 350,
+    width: SCREEN_WIDTH - 300,
     //flex: 1,
     borderRadius: 10,
     paddingTop: 32,

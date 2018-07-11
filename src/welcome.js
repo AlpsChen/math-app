@@ -45,31 +45,40 @@ export default class WelcomePage extends Component {
         this.props.navigation.navigate('Login');
       })
       .catch(error => this.setState({ errorMessage: error.message }));
-    firebase
-      .database()
-      .ref('/users/' + this.state.user.uid)
-      .remove();
     //LoginManager.logOut();
   };
 
   getUsername = () => {
     if (this.state.user) {
-      firebase
-        .database()
-        .ref('/users/' + this.state.user.uid)
-        .once('value')
-        .then(
-          function(snap) {
-            this.setState({
-              username: snap.val().username
-            });
-          }.bind(this)
-        );
     }
   };
 
   componentWillMount() {
-    //Orientation.lockToLandscape();
+    var user = firebase.auth().currentUser.uid;
+    firebase
+      .database()
+      .ref('/users/')
+      .child(user)
+      .once('value')
+      .then(snap => {
+        this.setState({
+          username: snap.val().username
+        });
+      });
+    // firebase
+    //   .auth()
+    //   .currentUser.getIdToken(true)
+    //   .then(idToken => {
+    //     firebase
+    //       .database()
+    //       .ref('/users/' + idToken)
+    //       .once('value')
+    //       .then(snap => {
+    //         this.setState({
+    //           username: snap.val().username
+    //         });
+    //       });
+    //   });
   }
 
   componentDidMount() {
@@ -82,7 +91,7 @@ export default class WelcomePage extends Component {
     const { navigate, getParam } = this.props.navigation;
     //const { params } = this.props.navigation.state;
     //console.warn(this.state.user.uid)
-    this.getUsername();
+    //this.getUsername();
     return (
       <View style={styles.bg}>
         <ImageBackground

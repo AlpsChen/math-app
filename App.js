@@ -5,29 +5,32 @@ import { createStackNavigator } from 'react-navigation';
 import WelcomePage from './src/welcome';
 import QuestionPage from './src/question';
 import ScoringPage from './src/scoring';
-import Loading from './src/login/loading';
-import SignUp from './src/login/signup';
-import Login from './src/login/login';
+// import Loading from './src/login/loading';
+// import SignUp from './src/login/signup';
+// import Login from './src/login/login';
 import ModePage from './src/mode';
 import ReviewPage from './src/review';
-import HeaderBackButton from 'react-navigation/src/views/Header/HeaderBackButton';
+import Onboarding from './src/onboarding';
+import AccountPage from './src/account';
+//import HeaderBackButton from 'react-navigation/src/views/Header/HeaderBackButton';
 import * as firebase from 'firebase';
 
 const routeConfig = {
   First: { screen: WelcomePage },
   Second: { screen: QuestionPage },
   Third: { screen: ScoringPage },
-  Loading,
-  SignUp,
-  Login,
+  // Loading,
+  // SignUp,
+  // Login,
   ModePage,
-  ReviewPage
+  ReviewPage,
+  AccountPage
 };
 const FirstNavigation = createStackNavigator(routeConfig, {
   initialRouteName: 'First'
 });
 const LoginNavigation = createStackNavigator(routeConfig, {
-  initialRouteName: 'Login'
+  initialRouteName: 'AccountPage'
 });
 
 export default class App extends Component {
@@ -45,7 +48,6 @@ export default class App extends Component {
     if (this.state.initialRoute === 'First') return <FirstNavigation />;
     else if (this.state.initialRoute === 'Login') return <LoginNavigation />;
     else return null;
-    //return null;
   }
 }
 

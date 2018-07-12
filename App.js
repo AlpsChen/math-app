@@ -7,7 +7,7 @@ import QuestionPage from './src/question';
 import ScoringPage from './src/scoring';
 import ModePage from './src/mode';
 import ReviewPage from './src/review';
-import Onboarding from './src/onboarding';
+import OnboardingPage from './src/onboarding';
 import AccountPage from './src/account';
 import checkIfFirstLaunch from './src/components/checkIfFirstLaunch';
 //import HeaderBackButton from 'react-navigation/src/views/Header/HeaderBackButton';
@@ -22,13 +22,17 @@ const routeConfig = {
   // Login,
   ModePage,
   ReviewPage,
-  AccountPage
+  AccountPage,
+  OnboardingPage
 };
 const FirstNavigation = createStackNavigator(routeConfig, {
   initialRouteName: 'First'
 });
 const LoginNavigation = createStackNavigator(routeConfig, {
   initialRouteName: 'AccountPage'
+});
+const OnboardingNavigation = createStackNavigator(routeConfig, {
+  initialRouteName: 'OnboardingPage'
 });
 
 export default class App extends Component {
@@ -54,10 +58,11 @@ export default class App extends Component {
     if (!checkedAsyncStorage) {
       return null;
     }
-    if (isFirstLaunch) return <Onboarding />;
+    if (isFirstLaunch) return <OnboardingNavigation />;
     else if (initialRoute === 'First') return <FirstNavigation />;
     else if (initialRoute === 'Login') return <LoginNavigation />;
     else return null;
+    //return <OnboardingNavigation />;
   }
 }
 

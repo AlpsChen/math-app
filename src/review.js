@@ -5,18 +5,134 @@ import {
   Image,
   Dimensions,
   StyleSheet,
-  ScrollView
+  ScrollView,
+  TouchableOpacity
 } from 'react-native';
 import Swiper from 'react-native-swiper';
 import * as firebase from 'firebase';
-const { width } = Dimensions.get('window');
+import Drawer from 'react-native-drawer';
+import DrawerContent from './components/drawerContent';
+import IIcon from 'react-native-vector-icons/Ionicons';
+import EIcon from 'react-native-vector-icons/Entypo';
+import FAIcon from 'react-native-vector-icons/FontAwesome';
+import MIcon from 'react-native-vector-icons/MaterialIcons';
+import { Button } from 'react-native-elements';
+import { Colors } from './common/constants/colors';
+
+renderOptions = props => {
+  var data = JSON.parse(props.JSON);
+  if (data.A) {
+    if (data.A.length + data.B.length + data.C.length + data.D.length < 20) {
+      return (
+        <Text
+          style={{ fontSize: 24, marginHorizontal: 20, marginVertical: 20 }}
+        >
+          (A) {'  '}
+          {data.A}
+          {'    '} (B) {'  '}
+          {data.B}
+          {'    '} (C) {'  '}
+          {data.C}
+          {'    '} (D) {'  '}
+          {data.D}
+        </Text>
+      );
+    } else {
+      return (
+        <View>
+          <Text style={{ fontSize: 24, marginHorizontal: 20, marginTop: 20 }}>
+            (A) {data.A}
+          </Text>
+          <Text style={{ fontSize: 24, marginHorizontal: 20 }}>
+            (B) {data.B}
+          </Text>
+          <Text style={{ fontSize: 24, marginHorizontal: 20 }}>
+            (C) {data.C}
+          </Text>
+          <Text style={{ fontSize: 24, marginHorizontal: 20 }}>
+            (D) {data.D}
+          </Text>
+        </View>
+      );
+    }
+  }
+};
 
 const Slide = props => {
   return (
     <View style={styles.slide}>
-      <ScrollView>
-        <Text style={styles.text}>{JSON.parse(props.data).content}</Text>
-      </ScrollView>
+      <Drawer
+        type="overlay"
+        open={props.showModal}
+        openDrawerOffset={0.2}
+        //closedDrawerOffset={-3}
+        styles={styles.drawer}
+        //tweenHandler={Drawer.tweenPresets.parallax}
+        side={'bottom'}
+        ref={ref => (this._drawer = ref)}
+        onCloseStart={props.close}
+        content={<DrawerContent color={['#008000', '#FF6347', '#87CEFA']} />}
+      >
+        <View style={styles.scrollViewContainer}>
+          <ScrollView>
+            <Text style={styles.text}>
+              {JSON.parse(props.data.JSON).content}
+              {'\n'}
+              {renderOptions(props.data)}
+            </Text>
+          </ScrollView>
+        </View>
+        <View style={styles.bottomBarContainer}>
+          <Button
+            icon={<EIcon name="pencil" size={25} />}
+            title={props.displayUserAnswer ? '隱藏答案' : '你的答案'}
+            buttonStyle={[styles.buttons, { marginLeft: 20 }]}
+            titleStyle={{ color: Colors.black }}
+            onPress={props.onPressUA}
+          />
+          <Button
+            icon={<FAIcon name="question" size={30} />}
+            title={props.displayCorrectAnswer ? '隱藏答案' : '正確答案'}
+            buttonStyle={styles.buttons}
+            titleStyle={{ color: Colors.black }}
+            onPress={props.onPressCA}
+          />
+          <View style={styles.iconsContainer}>
+            <Button
+              icon={<EIcon name="pencil" size={25} />}
+              title={props.displayUserAnswer ? props.data.userAnswer : '   '}
+              disabledStyle={styles.buttons}
+              disabledTitleStyle={styles.disabledTitleStyle}
+              disabled
+            />
+            <Button
+              icon={<FAIcon name="question" size={30} />}
+              title={
+                props.displayCorrectAnswer
+                  ? JSON.parse(props.data.JSON).answer
+                  : '   '
+              }
+              disabledStyle={styles.buttons}
+              disabledTitleStyle={styles.disabledTitleStyle}
+              disabled
+            />
+            <IIcon
+              style={[styles.paperIcon, { marginTop: 2 }]}
+              name="ios-paper-outline"
+              size={50}
+              onPress={props.open}
+            />
+            <MIcon
+              style={styles.runIcon}
+              name="directions-run"
+              size={30}
+              onPress={() => {
+                props.navigation.navigate('First');
+              }}
+            />
+          </View>
+        </View>
+      </Drawer>
     </View>
   );
 };
@@ -25,8 +141,10 @@ export default class ReviewPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      data: ''
-      //arr: ['a', 'b']
+      data: '',
+      showModal: false,
+      displayCorrectAnswer: false,
+      displayUserAnswer: false
     };
   }
 
@@ -35,33 +153,31 @@ export default class ReviewPage extends Component {
     gesturesEnabled: false
   };
 
-  // componentDidMount() {
-  //   let { params } = this.props.navigation.state;
-  //   let qnums = params.marked.length;
-  //   for (let i = 0; i < qnums; i++) {
-  //     this.question(i);
-  //   }
-  // }
-
-  renderPagination = (index, total, context) => {
-    return (
-      <View style={styles.paginationStyle}>
-        <Text style={{ color: 'grey' }}>
-          <Text style={styles.paginationText}>{index + 1}</Text>/{total}
-        </Text>
-      </View>
-    );
+  setShowModal = open => {
+    // this.setState(prevState => ({
+    //   showModal: !prevState.showModal
+    // }));
+    if (open) this.setState({ showModal: true });
+    else this.setState({ showModal: false });
   };
 
-  question = i => {};
+  onPressButton = userAnswer => {
+    if (userAnswer)
+      this.setState(pre => ({
+        displayUserAnswer: !pre.displayUserAnswer
+      }));
+    else
+      this.setState(pre => ({
+        displayCorrectAnswer: !pre.displayCorrectAnswer
+      }));
+  };
 
-  renderMarked = () => {
-    var tmp = [];
-    for (let i = 0; i < this.state.arr.length; i++) {
-      tmp.push();
-    }
-    //console.log(tmp);
-    return tmp;
+  onIndexChanged = () => {
+    this.setState({
+      showModal: false,
+      displayCorrectAnswer: false,
+      displayUserAnswer: false
+    });
   };
 
   render() {
@@ -71,10 +187,25 @@ export default class ReviewPage extends Component {
         {/* {qnums?  */}
         <Swiper
           style={styles.wrapper}
-          renderPagination={this.renderPagination}
-          loop
+          loop={false}
+          //renderPagination={this.renderPagination}
+          showsButtons
+          onIndexChanged={this.onIndexChanged}
+          scrollEnabled={!this.state.showModal}
         >
-          {marked.map((item, i) => <Slide data={item} />)}
+          {marked.map((item, i) => (
+            <Slide
+              data={item}
+              showModal={this.state.showModal}
+              open={this.setShowModal.bind(this, true)}
+              close={this.setShowModal.bind(this, false)}
+              displayUserAnswer={this.state.displayUserAnswer}
+              displayCorrectAnswer={this.state.displayCorrectAnswer}
+              onPressUA={this.onPressButton.bind(this, true)}
+              onPressCA={this.onPressButton.bind(this, false)}
+              navigation={this.props.navigation}
+            />
+          ))}
         </Swiper>
       </View>
     );
@@ -84,13 +215,13 @@ export default class ReviewPage extends Component {
 const styles = StyleSheet.create({
   slide: {
     flex: 1,
-    justifyContent: 'center',
-    backgroundColor: '#FFF'
+    //justifyContent: 'center',
+    backgroundColor: Colors.white
   },
   text: {
-    color: '#000',
-    fontSize: 30,
-    fontWeight: 'bold'
+    fontSize: 24,
+    marginHorizontal: 20,
+    marginVertical: 10
   },
   image: {
     width: '100%',
@@ -98,13 +229,41 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
     flex: 1
   },
-  paginationStyle: {
-    position: 'absolute',
-    bottom: 10,
-    right: 10
+  scrollViewContainer: {
+    flex: 3
   },
-  paginationText: {
-    color: '#000',
+  bottomBarContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: Colors.darkOrange,
+    alignItems: 'center'
+    //justifyContent: 'center'
+  },
+  buttons: {
+    paddingHorizontal: 5,
+    marginRight: 20,
+    borderRadius: 10,
+    backgroundColor: 'transparent',
+    borderWidth: 5,
+    borderColor: Colors.black
+  },
+  runIcon: {
+    marginHorizontal: 20,
+    borderWidth: 5,
+    borderRadius: 10,
+    paddingVertical: 2,
+    paddingHorizontal: 2
+  },
+  iconsContainer: {
+    position: 'absolute',
+    right: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  disabledTitleStyle: {
+    color: Colors.black,
+    fontWeight: 'bold',
     fontSize: 20
   }
 });

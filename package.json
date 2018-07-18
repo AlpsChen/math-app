@@ -18,6 +18,7 @@
     "react-native-progress": "^3.5.0",
     "react-native-sketch-draw": "^2.0.2",
     "react-native-slider": "git+https://github.com/boilerroomtv/react-native-slider.git",
+    "react-native-sound": "^0.10.9",
     "react-native-swiper": "^1.5.13",
     "react-native-vector-icons": "^4.6.0",
     "react-navigation": "^2.6.2",

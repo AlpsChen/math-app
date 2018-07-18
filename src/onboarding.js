@@ -76,7 +76,7 @@ export default class OnboardingPage extends Component {
               <IIcon
                 name={'md-bulb'}
                 size={240}
-                style={{ marginTop: 10, marginBottom: -15 }}
+                style={{ marginBottom: -30 }}
               />
             ),
             title: '歡迎',
@@ -84,15 +84,13 @@ export default class OnboardingPage extends Component {
           },
           {
             backgroundColor: '#FFCC99',
-            image: <SLIcon name={'map'} size={210} style={{ marginTop: 20 }} />,
+            image: <SLIcon name={'map'} size={210} />,
             title: '五種模式',
             subtitle: '適性、隨機、簡單、中等、困難'
           },
           {
             backgroundColor: '#FF9999',
-            image: (
-              <SLIcon name={'refresh'} size={210} style={{ marginTop: 20 }} />
-            ),
+            image: <SLIcon name={'refresh'} size={210} />,
             title: '隨時更新',
             subtitle: '最新題型，一應俱全'
           },
@@ -102,11 +100,23 @@ export default class OnboardingPage extends Component {
               <MCIcon
                 name={'checkbox-multiple-marked-outline'}
                 size={210}
-                style={{ marginTop: 20, marginBottom: 10 }}
+                //style={{ marginBottom: 10 }}
               />
             ),
             title: '複習',
             subtitle: '標記難題，加強印象'
+          },
+          {
+            backgroundColor: '#99CCFF',
+            image: (
+              <SLIcon
+                name={'earphones'}
+                size={210}
+                //style={{ marginBottom: 10 }}
+              />
+            ),
+            title: '音效',
+            subtitle: '開啟聲音，讓答題更有趣'
           },
           {
             backgroundColor: '#FFCCE5',
@@ -114,7 +124,7 @@ export default class OnboardingPage extends Component {
               <EIcon
                 name={'aircraft-take-off'}
                 size={210}
-                style={{ marginTop: 20 }}
+                //style={{ marginTop: 20 }}
               />
             ),
             title: '數學起飛',

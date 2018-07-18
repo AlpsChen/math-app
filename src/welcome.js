@@ -6,17 +6,45 @@ import {
   View,
   ImageBackground,
   Dimensions,
-  TouchableOpacity
+  TouchableOpacity,
+  NetInfo,
+  Alert
 } from 'react-native';
 import FIcon from 'react-native-vector-icons/Foundation';
 import Modal from 'react-native-modal';
 import * as Animatable from 'react-native-animatable';
 import * as firebase from 'firebase';
-//import Orientation from 'react-native-orientation';
-import { LoginManager } from 'react-native-fbsdk';
-
+import IIcon from 'react-native-vector-icons/Ionicons';
+import SLIcon from 'react-native-vector-icons/SimpleLineIcons';
+import MCIcon from 'react-native-vector-icons/MaterialCommunityIcons';
+import EIcon from 'react-native-vector-icons/Entypo';
 const { width, height } = Dimensions.get('window');
 const texts = ['適性模式', '隨機模式', '簡單模式', '中等模式', '困難模式'];
+
+const UserTypeItem = props => {
+  const { image, label, labelColor, selected, ...attributes } = props;
+  return (
+    <TouchableOpacity {...attributes}>
+      <View
+        style={[
+          styles.userTypeItemContainer,
+          selected && styles.userTypeItemContainerSelected
+        ]}
+      >
+        <Text style={[styles.userTypeLabel, { color: labelColor }]}>
+          {label}
+        </Text>
+        <Image
+          source={image}
+          style={[
+            styles.userTypeMugshot,
+            selected && styles.userTypeMugshotSelected
+          ]}
+        />
+      </View>
+    </TouchableOpacity>
+  );
+};
 
 export default class WelcomePage extends Component {
   constructor(props) {
@@ -25,7 +53,8 @@ export default class WelcomePage extends Component {
       showModal: false,
       user: null,
       errorMessage: '',
-      username: ''
+      username: '',
+      status: true
     };
   }
   static navigationOptions = {
@@ -42,15 +71,10 @@ export default class WelcomePage extends Component {
       .auth()
       .signOut()
       .then(() => {
-        this.props.navigation.navigate('Login');
+        this.props.navigation.navigate('AccountPage');
       })
       .catch(error => this.setState({ errorMessage: error.message }));
     //LoginManager.logOut();
-  };
-
-  getUsername = () => {
-    if (this.state.user) {
-    }
   };
 
   componentWillMount() {
@@ -65,35 +89,53 @@ export default class WelcomePage extends Component {
           username: snap.val().username
         });
       });
-    // firebase
-    //   .auth()
-    //   .currentUser.getIdToken(true)
-    //   .then(idToken => {
-    //     firebase
-    //       .database()
-    //       .ref('/users/' + idToken)
-    //       .once('value')
-    //       .then(snap => {
-    //         this.setState({
-    //           username: snap.val().username
-    //         });
-    //       });
-    //   });
   }
 
   componentDidMount() {
     firebase.auth().onAuthStateChanged(user => {
       this.setState({ user });
     });
+    NetInfo.isConnected.addEventListener(
+      'connectionChange',
+      this.handleConnectionChange
+    );
+  }
+
+  handleConnectionChange = isConnected => {};
+
+  componentWillUnmount() {
+    NetInfo.isConnected.removeEventListener(
+      'connectionChange',
+      this.handleConnectionChange
+    );
+  }
+
+  detectConnection() {
+    const { navigate, getParam } = this.props.navigation;
+    NetInfo.getConnectionInfo().then(connectionInfo => {
+      if (connectionInfo.type == 'none' || connectionInfo.type == 'unknown') {
+        Alert.alert('請檢查網路連線');
+      } else {
+        this.setState({ showModal: false });
+        navigate('Second', {
+          mode: getParam('mode', 0),
+          qnums: getParam('qnums', 10)
+        });
+        // navigate('Third', {
+        //   score: 0,
+        //   marked: [
+        //     { difficulty: 'easy', index: 2, userAnswer: 'A' },
+        //     { difficulty: 'easy', index: 1, userAnswer: 'A' }
+        //   ]
+        // });
+      }
+    });
   }
 
   render() {
     const { navigate, getParam } = this.props.navigation;
-    //const { params } = this.props.navigation.state;
-    //console.warn(this.state.user.uid)
-    //this.getUsername();
     return (
-      <View style={styles.bg}>
+      <View style={styles.container}>
         <ImageBackground
           source={require('../assets/bgImage.jpg')}
           style={styles.bgImage}
@@ -102,7 +144,7 @@ export default class WelcomePage extends Component {
           {this.state.errorMessage ? (
             <Text style={{ color: 'red' }}>{this.state.errorMessage}</Text>
           ) : null}
-          <View style={styles.bg}>
+          <View style={styles.buttonsContainer}>
             <Text style={{ fontSize: 30, fontWeight: '800', color: '#FFFF90' }}>
               {this.state.username}！來算數學吧！
             </Text>
@@ -134,6 +176,43 @@ export default class WelcomePage extends Component {
               <Text style={styles.buttonText}>登出</Text>
             </TouchableOpacity>
           </View>
+          {/* <View style={styles.iconsContainer}> */}
+          {/* <MCIcon
+              name={'settings-box'}
+              style={{
+                //borderWidth: 8,
+                //borderRadius: 30,
+                marginTop: 20,
+                //padding: 10,
+                //color: 'black',
+                backgroundColor: 'white',
+                borderColor: '#000099'
+              }}
+              size={100}
+              color={'blue'}
+            /> */}
+          {/* <UserTypeItem
+                label="COOL"
+                labelColor="#ECC841"
+                image={USER_COOL}
+                onPress={() => this.setSelectedType('parent')}
+                selected={selectedType === 'parent'}
+              />
+              <UserTypeItem
+                label="STUDENT"
+                labelColor="#2CA75E"
+                image={USER_STUDENT}
+                onPress={() => this.setSelectedType('child')}
+                selected={selectedType === 'child'}
+              />
+              <UserTypeItem
+                label="HARRY POTTER"
+                labelColor="#36717F"
+                image={USER_HP}
+                onPress={() => this.setSelectedType('teacher')}
+                selected={selectedType === 'teacher'}
+              /> */}
+          {/* </View> */}
           <Modal
             isVisible={this.state.showModal}
             supportedOrientations={['portrait', 'landscape']}
@@ -150,21 +229,7 @@ export default class WelcomePage extends Component {
               </View>
               <TouchableOpacity
                 style={styles.modalButton}
-                onPress={() => {
-                  this.setState({ showModal: false });
-                  //var tmp = [{src:"https://firebasestorage.googleapis.com/v0/b/myapp1116.appspot.com/o/easy%2Fm7a032102c.jpg?alt=media&token=12e55536-b2ad-43f5-a035-f07897e362f5", ans:"A"}, {src:"https://firebasestorage.googleapis.com/v0/b/myapp1116.appspot.com/o/easy%2Fm7a012101d.jpg?alt=media&token=cf269b41-225a-479b-be28-df1623480d28",ans:"D"}]
-                  // navigate('Second',
-                  //   mode: getParam('mode', 0),
-                  //   qnums: getParam('qnums', 10)
-                  // });
-                  navigate('Third', {
-                    score: 0,
-                    marked: [
-                      { difficulty: 'easy', index: 2 },
-                      { difficulty: 'easy', index: 1 }
-                    ]
-                  });
-                }}
+                onPress={this.detectConnection.bind(this)}
               >
                 <Text style={{ fontSize: 20 }}>確定</Text>
               </TouchableOpacity>
@@ -182,11 +247,33 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%'
   },
-  bg: {
+  container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center'
     //backgroundColor: "#FAFAD2"
+  },
+  buttonsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  iconsContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    width: width,
+    alignItems: 'center'
+  },
+  iconItemContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    opacity: 0.5
+    //size: 50
+  },
+  iconSelected: {
+    opacity: 1
+    //size: 100
   },
   button: {
     backgroundColor: '#FFE4B5',

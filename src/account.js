@@ -130,13 +130,18 @@ export default class AccountPage extends Component {
                 errorMessage: '帳號不存在'
               });
               break;
-            // default:
-            //   this.setState({
-            //     errorMessage: '登入失敗'
-            //   });
-            //   break;
+            case 'auth/network-request-failed':
+              this.setState({
+                errorMessage: '請檢查網路連線'
+              });
+              break;
+            default:
+              this.setState({
+                errorMessage: '登入失敗'
+              });
+              break;
           }
-          //console.log(error.code);
+          console.log(error.code);
           this.emailInput.shake();
           this.passwordInput.shake();
           //}, 1000);
@@ -160,45 +165,49 @@ export default class AccountPage extends Component {
     this.setState({ isLoading: true });
     Expo.Facebook.logInWithReadPermissionsAsync(appId, {
       permissions: ['public_profile', 'email', 'user_friends']
-    }).then(result => {
-      if (result.type === 'success') {
-        const credential = firebase.auth.FacebookAuthProvider.credential(
-          result.token
-        );
-        fetch(
-          `https://graph.facebook.com/me?access_token=${
+    })
+      .then(result => {
+        if (result.type === 'success') {
+          const credential = firebase.auth.FacebookAuthProvider.credential(
             result.token
-          }&fields=id,first_name,email,about,picture`
-        ).then(response => {
-          response.json().then(json => {
-            //console.log('b');
-            firebase
-              .auth()
-              .signInWithCredential(credential)
-              .then(authData => {
-                //console.log(authData);
-                firebase
-                  .database()
-                  .ref('users')
-                  .child(authData.uid)
-                  .set({
-                    username: json.first_name,
-                    email: authData.email
-                  })
-                  .then(() => {
-                    this.setState({ isLoading: false });
-                    //console.log('a');
-                    this.props.navigation.navigate('First');
-                    //console.log('b');
-                  })
-                  .catch(error => console.log(error.Message));
-              });
+          );
+          fetch(
+            `https://graph.facebook.com/me?access_token=${
+              result.token
+            }&fields=id,first_name,email,about,picture`
+          ).then(response => {
+            response.json().then(json => {
+              //console.log('b');
+              firebase
+                .auth()
+                .signInWithCredential(credential)
+                .then(authData => {
+                  //console.log(authData);
+                  firebase
+                    .database()
+                    .ref('users')
+                    .child(authData.uid)
+                    .set({
+                      username: json.first_name,
+                      email: authData.email
+                    })
+                    .then(() => {
+                      this.setState({ isLoading: false });
+                      //console.log('a');
+                      this.props.navigation.navigate('First');
+                      //console.log('b');
+                    })
+                    .catch(error => console.log(error.Message));
+                });
+            });
           });
-        });
-      } else {
-        this.setState({ isLoading: false });
-      }
-    });
+        } else {
+          this.setState({ isLoading: false });
+        }
+      })
+      .catch(error => {
+        this.setState({ isLoading: false, errorMessage: '登入失敗' });
+      });
   }
 
   renew() {
@@ -253,6 +262,11 @@ export default class AccountPage extends Component {
             case 'auth/email-already-in-use':
               this.setState({
                 errorMessage: '帳號已在別處被使用'
+              });
+              break;
+            case 'auth/network-request-failed':
+              this.setState({
+                errorMessage: '請檢查網路連線'
               });
               break;
             default:
@@ -506,7 +520,7 @@ export default class AccountPage extends Component {
               <Button
                 buttonStyle={styles.loginButton}
                 containerStyle={{
-                  marginTop: 5,
+                  marginTop: 25,
                   flex: 0,
                   alignItems: 'center'
                 }}
@@ -578,9 +592,7 @@ const styles = StyleSheet.create({
   },
   fbButton: {
     marginTop: 15,
-    //marginLeft: 50,
-    //position: 'absolute',
-    //left: 230
+    marginBottom: -15,
     borderRadius: 20
   },
   loginTextButton: {
@@ -601,7 +613,7 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     backgroundColor: 'white',
-    width: SCREEN_WIDTH - 300,
+    width: SCREEN_WIDTH * 0.55,
     //flex: 1,
     borderRadius: 10,
     paddingTop: 32,

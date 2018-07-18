@@ -17,9 +17,6 @@ const routeConfig = {
   First: { screen: WelcomePage },
   Second: { screen: QuestionPage },
   Third: { screen: ScoringPage },
-  // Loading,
-  // SignUp,
-  // Login,
   ModePage,
   ReviewPage,
   AccountPage,
@@ -62,7 +59,7 @@ export default class App extends Component {
     else if (initialRoute === 'First') return <FirstNavigation />;
     else if (initialRoute === 'Login') return <LoginNavigation />;
     else return null;
-    //return <OnboardingNavigation />;
+    // return <OnboardingNavigation />;
   }
 }
 

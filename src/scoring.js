@@ -65,6 +65,7 @@ export default class ScoringPage extends Component {
     let { marked } = this.props.navigation.state.params;
     let { navigate } = this.props.navigation;
     if (marked.length == 0) {
+      alert('沒有難題哦！');
     } else {
       for (let i = 0; i < marked.length; i++) {
         let difficulty = marked[i].difficulty;
@@ -74,19 +75,16 @@ export default class ScoringPage extends Component {
           .ref('/questionBank/' + difficulty + '/' + index)
           .once('value')
           .then(snap => {
-            arr.push(JSON.stringify(snap.val()));
+            arr.push({
+              JSON: JSON.stringify(snap.val()),
+              userAnswer: marked[i].userAnswer
+            });
             if (i == marked.length - 1) {
               this.setState({
                 downloadFinished: true
               });
             }
           });
-      }
-      if (this.state.downloadFinished) {
-        //console.log(arr);
-        navigate('ReviewPage', {
-          marked: arr
-        });
       }
     }
   }
@@ -96,6 +94,11 @@ export default class ScoringPage extends Component {
     let { params } = this.props.navigation.state;
     return (
       <View style={styles.bg}>
+        {this.state.downloadFinished
+          ? navigate('ReviewPage', {
+              marked: arr
+            })
+          : null}
         <ImageBackground
           source={bgImage}
           style={styles.bgImage}

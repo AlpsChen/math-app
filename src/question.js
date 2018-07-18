@@ -11,21 +11,24 @@ import {
   Alert,
   ScrollView,
   Platform,
-  TouchableHighlight
-  //Slider
+  TouchableHighlight,
+  ActivityIndicator,
+  NetInfo,
+  StatusBar
 } from 'react-native';
 import * as firebase from 'firebase';
 import ChoiceButton from './components/choicebutton';
 import MCIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import FIcon from 'react-native-vector-icons/Foundation';
-import EIcon from 'react-native-vector-icons/Entypo';
-import FAIcon from 'react-native-vector-icons/FontAwesome';
-//import Orientation from 'react-native-orientation';
-import SketchDraw from 'react-native-sketch-draw';
+import IIcons from 'react-native-vector-icons/Ionicons';
 import Drawer from 'react-native-drawer';
 import MathJax from 'react-native-mathjax';
-import RNDraw from 'rn-draw';
-import Slider from 'react-native-slider';
+import { Audio, PlaybackObject } from 'expo';
+
+import DrawerContent from './components/drawerContent';
+
+import { Colors } from './common/constants/colors';
+import { styles } from '../styles';
 
 const iosConfig = {
   clientId:
@@ -41,22 +44,7 @@ firebase.initializeApp(iosConfig);
 var chosenEasy = [100],
   chosenMedium = [100],
   chosenHard = [100];
-const bgcolor = '#FFE4B5';
 const { height, width } = Dimensions.get('screen');
-
-// const ImageHeader = props => {
-//   return (
-//     <View
-//     //style={{height: 10*vh, justifyContent: 'flex-end', padding: 5}}
-//     >
-//       <Image
-//         style={{ width: '100%', height: 50 }}
-//         source={require('../components/bgImage.jpg')}
-//         resizeMode="cover"
-//       />
-//     </View>
-//   );
-// };
 
 export default class QuestionPage extends Component {
   constructor(props) {
@@ -66,18 +54,17 @@ export default class QuestionPage extends Component {
     this.difficulty = 'easy'; // current difficulty
     this.index = 0; // index of current question in Firebase
     this.marked = []; // records the marked questions
-    this._undo;
-    this._clear;
+    this.correctCount = 0;
+    this.chosenOption = ''; // the option that the user chose
     this.state = {
       data: '', // data of current question
       total: 0, // total question of current difficulty
       shownext: false, // true to show the "next" button
-      renew: false, // true to refresh the question display and buttons
+      renew: true, // true to refresh the question display and buttons
       correct: false, // true if answered correctly
-      penColor: '#87CEFA', // pen color (default is light blue)
       showModal: false, // true to show modal (計算紙)
-      thickness: 5,
-      mark: false // true if current question is marked
+      mark: false, // true if current question is marked
+      isConnected: true
     };
     //Orientation.lockToLandscape();
     chosenEasy.fill(false);
@@ -86,18 +73,27 @@ export default class QuestionPage extends Component {
   }
 
   componentWillMount() {
-    //Orientation.lockToLandscape();
-    this.init();
     this.next();
   }
 
+  componentDidMount() {
+    NetInfo.isConnected.addEventListener(
+      'connectionChange',
+      this.handleConnectionChange
+    );
+  }
+
+  handleConnectionChange = isConnected => {
+    this.setState({ isConnected });
+  };
   static navigationOptions = ({ navigation }) => {
     const { getParam } = navigation;
+    const { params } = navigation.state;
     var mark = false;
     return {
       title: '題目：' + getParam('displaynum', 1) + '/' + getParam('qnums', 10),
       headerStyle: {
-        backgroundColor: bgcolor
+        backgroundColor: Colors.orange
       },
       //header: <ImageHeader/>,
       headerLeft: (
@@ -154,19 +150,16 @@ export default class QuestionPage extends Component {
     };
   };
 
-  //initialize
-  init = () => {};
-
   //mark the question
   onClickMark = now => {
     if (now) {
       //unmark question
       this.props.navigation.setParams({ mark: false });
-      this.marked.pop();
+      this.setState({ mark: false });
     } else {
       //mark question
       this.props.navigation.setParams({ mark: true });
-      this.marked.push({ difficulty: this.difficulty, index: this.index });
+      this.setState({ mark: true });
     }
   };
 
@@ -263,6 +256,13 @@ export default class QuestionPage extends Component {
   }
 
   next() {
+    if (this.state.mark && this.num > 0) {
+      this.marked.push({
+        difficulty: this.difficulty,
+        index: this.index,
+        userAnswer: this.chosenOption
+      });
+    }
     if (this.num < this.props.navigation.state.params.qnums) {
       this.num++;
       //console.warn(this.state.correct);
@@ -275,46 +275,46 @@ export default class QuestionPage extends Component {
         .then(snap => {
           this.setState({
             total: snap.val().total
-          }).bind(this);
-        });
-      console.log(this.total);
-      var starArray = this.displaystars();
-      this.props.navigation.setParams({
-        displaynum: this.num,
-        difficult: this.difficulty,
-        icons: starArray,
-        onClickMark: this.onClickMark.bind(this),
-        mark: false
-      });
+          });
+        })
+        .then(() => {
+          var starArray = this.displaystars();
+          this.props.navigation.setParams({
+            displaynum: this.num,
+            difficult: this.difficulty,
+            icons: starArray,
+            onClickMark: this.onClickMark.bind(this),
+            mark: false
+          });
 
-      switch (this.difficulty) {
-        case 'easy':
-          this.generateRandom(this.state.total, chosenEasy);
-          break;
-        case 'medium':
-          this.generateRandom(this.state.total, chosenMedium);
-          break;
-        case 'hard':
-          this.generateRandom(this.state.total, chosenHard);
-          break;
-      }
+          switch (this.difficulty) {
+            case 'easy':
+              this.generateRandom(this.state.total, chosenEasy);
+              break;
+            case 'medium':
+              this.generateRandom(this.state.total, chosenMedium);
+              break;
+            case 'hard':
+              this.generateRandom(this.state.total, chosenHard);
+              break;
+          }
 
-      //download json data from Firebase
-      firebase
-        .database()
-        .ref('/questionBank/' + this.difficulty + '/' + this.index)
-        .once('value')
-        .then(
-          function(snap) {
-            this.setState({
-              data: snap.val(),
-              shownext: false,
-              renew: false,
-              correct: false,
-              onClickMark: this.onClickMark.bind(this)
+          //download json data from Firebase
+          firebase
+            .database()
+            .ref('/questionBank/' + this.difficulty + '/' + this.index)
+            .once('value')
+            .then(snap => {
+              this.setState({
+                data: snap.val(),
+                shownext: false,
+                renew: false,
+                correct: false,
+                onClickMark: this.onClickMark.bind(this),
+                mark: false
+              });
             });
-          }.bind(this)
-        );
+        });
     } else {
       //go to scoring page
       var { navigate } = this.props.navigation;
@@ -337,13 +337,18 @@ export default class QuestionPage extends Component {
               shouldshake={correctoption ? true : false}
               _onPress={() => {
                 this.setState({ shownext: true });
-                //console.warn(this.state.shownext);
+                var lastCorrectCount = 0;
                 if (!correctoption) {
                   //the option is correct when correctoption = 0
                   this.setState({ correct: true });
                   this.score += 1 / this.props.navigation.state.params.qnums;
-                  //console.warn(this.state.correct);
+                  this.correctCount++;
+                } else {
+                  lastCorrectCount = this.correctCount;
+                  this.correctCount = 0;
                 }
+                //this.chosenOption = key;
+                this.renderSound(lastCorrectCount);
               }}
             />
           )}
@@ -353,123 +358,85 @@ export default class QuestionPage extends Component {
     return options;
   }
 
-  // renderIf(condition, content){
-  //   return condition? content:null;
-  // }
+  renderSound = lastCorrectCount => {
+    switch (this.correctCount) {
+      case 0:
+        var i = Math.floor(Math.random() * 3);
+        switch (i) {
+          case 0:
+            this.sound(
+              require('../assets/sounds/wrong-defeat.mp3'),
+              lastCorrectCount >= 3
+            );
+            break;
+          case 1:
+            this.sound(require('../assets/sounds/wrong-executed.mp3'), true);
+            break;
+          case 2:
+            this.sound(
+              require('../assets/sounds/wrong-youHaveBeenSlained.mp3'),
+              true
+            );
+            break;
+        }
 
-  // _onLayout() {
-  //   if (this.state.src) {
-  //     Image.getSize(this.state.src, (w, h) => {
-  //       this.setState({
-  //         imageHeight: Dimensions.get("window").width * h / w
-  //       });
-  //     });
-  //   }
-  // }
+        break;
+      case 1:
+        if (this.num == 1)
+          this.sound(require('../assets/sounds/firstBlood.mp3'));
+        else this.sound(require('../assets/sounds/correct.mp3'));
+        break;
 
-  drawerContent = () => {
-    return (
-      <View
-        style={{
-          flex: 1,
-          flexDirection: 'row'
-        }}
-      >
-        <RNDraw
-          containerStyle={styles.sketch}
-          rewind={undo => {
-            this._undo = undo;
-          }}
-          clear={clear => {
-            this._clear = clear;
-          }}
-          color={this.state.penColor}
-          strokeWidth={this.state.thickness}
-          onChangeStrokes={strokes => console.log(strokes)}
-        />
-        <View
-          style={{
-            flex: 0.5,
-            flexDirection: 'column',
-            backgroundColor: '#FFE4B5'
-            //alignItems: 'center'
-          }}
-        >
-          <View
-            style={{
-              flex: 6,
-              justifyContent: 'space-around',
-              alignItems: 'center'
-            }}
-          >
-            {/* <EIcon
-            name={'pencil'}
-            size={35}
-            color={this.state.tool === 'pen' ? '#808080' : '#000'}
-            onPress={() => {
-              this.setState({
-                tool: 'pen'
-              });
-            }}
-            
-          /> */}
-
-            <FAIcon
-              name={'undo'}
-              size={30}
-              color={'#000'}
-              onPress={this._undo}
-              style={{ marginTop: 10 }}
-            />
-            <MCIcon
-              name={'delete'}
-              size={35}
-              color={'#000'}
-              onPress={this._clear}
-              style={{ marginTop: 5 }}
-            />
-
-            {/* </View> */}
-            {/* <View style={{ flex: 0.5, flexDirection: "column", backgroundColor: "#FFE4B5" }}> */}
-            {this.renderColorButton('#008000')}
-            {this.renderColorButton('#FF6347')}
-            {this.renderColorButton('#87CEFA')}
-          </View>
-          <View style={{ flex: 3, justifyContent: 'center' }}>
-            <Slider
-              value={this.state.thickness}
-              onValueChange={value => this.setState({ thickness: value })}
-              orientation="vertical"
-              step={1}
-              minimumValue={2}
-              maximumValue={8}
-              thumbStyle={{ size: 10 }}
-              style={{
-                transform: [{ rotateZ: '90deg' }]
-                //flex: 3
-              }}
-            />
-          </View>
-        </View>
-      </View>
-    );
+      case 2:
+        this.sound(require('../assets/sounds/doubleKill.mp3'));
+        break;
+      case 3:
+        this.sound(require('../assets/sounds/tripleKill.mp3'));
+        break;
+      case 4:
+        this.sound(require('../assets/sounds/quadraKill.mp3'));
+        break;
+      case 5:
+        this.sound(require('../assets/sounds/pentaKill.mp3'));
+        break;
+      case 6:
+        this.sound(require('../assets/sounds/killingSpree.mp3'), false);
+        break;
+      case 7:
+        this.sound(require('../assets/sounds/rampage.mp3'), false);
+        break;
+      case 8:
+        this.sound(require('../assets/sounds/unstoppable.mp3'), false);
+        break;
+      case 9:
+        this.sound(require('../assets/sounds/dominating.mp3'), false);
+        break;
+      case 10:
+        this.sound(require('../assets/sounds/godlike.mp3'), false);
+        break;
+      case this.correctCount > 10:
+        this.sound(require('../assets/sounds/legendary.mp3'), false);
+        break;
+      default:
+        break;
+    }
   };
 
-  renderColorButton = color => {
-    const active = color === this.state.penColor;
-
-    return (
-      <TouchableOpacity
-        onPress={() => this.setState({ penColor: color })}
-        style={[
-          styles.colorButton,
-          {
-            backgroundColor: active ? '#FABBA9' : color,
-            borderColor: color
-          }
-        ]}
-      />
-    );
+  sound = (position, shutDown) => {
+    const soundObject = new Expo.Audio.Sound();
+    soundObject.loadAsync(position).then(() => {
+      soundObject.playAsync();
+      // .then(() => {
+      //   if (shutDown) {
+      //     const soundObjecta = new Expo.Audio.Sound();
+      //     soundObjecta
+      //       .loadAsync(require('../assets/sounds/shutDown.mp3'))
+      //       .then(() => {
+      //         soundObjecta.playAsync();
+      //       });
+      //   }
+      // });
+    });
   };
 
   renderOptions = () => {
@@ -492,54 +459,18 @@ export default class QuestionPage extends Component {
       } else {
         return (
           <View>
-            <MathJax
-              style={{ marginHorizontal: 20 }}
-              html={'$(A)' + this.state.data.A + '$'}
-              customStyle={`
-                * {
-                  font-family: 'Times New Roman';
-                  font-size: 24;
-                  }
-              `}
-              enableBaseUrl={false}
-              //enableAnimation={false}
-            />
-            <MathJax
-              style={{ marginHorizontal: 20 }}
-              html={'$(B)' + this.state.data.B + '$'}
-              customStyle={`
-                * {
-                  font-family: 'Times New Roman';
-                  font-size: 24;
-                  }
-              `}
-              enableBaseUrl={false}
-              //enableAnimation={false}
-            />
-            <MathJax
-              style={{ marginHorizontal: 20 }}
-              html={'$(C)' + this.state.data.C + '$'}
-              customStyle={`
-                * {
-                  font-family: 'Times New Roman';
-                  font-size: 24;
-                  }
-              `}
-              enableBaseUrl={false}
-              //enableAnimation={false}
-            />
-            <MathJax
-              style={{ marginHorizontal: 20 }}
-              html={'$(D)' + this.state.data.D + '$'}
-              customStyle={`
-                * {
-                  font-family: 'Times New Roman';
-                  font-size: 24;
-                  }
-              `}
-              enableBaseUrl={false}
-              //enableAnimation={false}
-            />
+            <Text style={{ fontSize: 24, marginHorizontal: 20 }}>
+              (A) {this.state.data.A}
+            </Text>
+            <Text style={{ fontSize: 24, marginHorizontal: 20 }}>
+              (B) {this.state.data.B}
+            </Text>
+            <Text style={{ fontSize: 24, marginHorizontal: 20 }}>
+              (C) {this.state.data.C}
+            </Text>
+            <Text style={{ fontSize: 24, marginHorizontal: 20 }}>
+              (D) {this.state.data.D}
+            </Text>
           </View>
         );
       }
@@ -549,9 +480,21 @@ export default class QuestionPage extends Component {
   render() {
     return (
       <View style={styles.bg}>
+        <StatusBar hidden />
         {this.state.renew ? (
           <View style={{ flex: 1 }}>
-            <View style={{ flex: 2 }} />
+            <View style={{ flex: 2, alignItems: 'center' }}>
+              <ActivityIndicator
+                animating
+                size={'large'}
+                style={{ marginTop: 20 }}
+              />
+              {this.state.isConnected ? null : (
+                <Text style={{ color: 'red', marginTop: 20, fontSize: 20 }}>
+                  請檢查網路連線
+                </Text>
+              )}
+            </View>
             <View style={styles.buttons} />
           </View>
         ) : (
@@ -567,39 +510,37 @@ export default class QuestionPage extends Component {
             onCloseStart={() => {
               this.setState({ showModal: false });
             }}
-            content={this.drawerContent()}
+            content={
+              <DrawerContent color={['#008000', '#FF6347', '#87CEFA']} />
+            }
           >
+            ','
             <View style={{ flex: 2, justifyContent: 'center' }}>
               {/* display question */}
               <ScrollView>
                 {this.state.data ? (
                   <View>
-                    <MathJax
-                      style={{ marginHorizontal: 20, marginTop: 5, flex: 1 }}
-                      html={'$' + this.state.data.content + '$'}
-                      customStyle={`
-                * {
-                  font-family: 'Times New Roman';
-                  font-size: 20;
-                  }
-              `}
-                      enableBaseUrl={false}
-                      enableAnimation={false}
-                      scalesPageToFit={Platform.OS === 'android' ? true : false}
-                    />
+                    <Text
+                      style={{
+                        fontSize: 24,
+                        marginHorizontal: 20,
+                        marginVertical: 10
+                      }}
+                    >
+                      {this.state.data.content}
+                    </Text>
                     {this.renderOptions()}
                   </View>
                 ) : null}
               </ScrollView>
             </View>
-
             <View style={styles.buttons}>
               {this.showoptions()}
               <View style={styles.nextbutton}>
                 <MCIcon
                   name={'arrow-right-bold-box'}
                   size={85}
-                  color={this.state.shownext ? '#FFFFFF' : bgcolor}
+                  color={this.state.shownext ? Colors.white : Colors.orange}
                   onPress={() => {
                     //console.warn(this.state.shownext);
                     if (this.state.shownext) {
@@ -610,23 +551,17 @@ export default class QuestionPage extends Component {
                     }
                   }}
                 />
-                {/* <Text>{this.state.ans}</Text> */}
+                {/* <Text>{this.state.data.answer}</Text> */}
               </View>
-              <TouchableOpacity
-                underlayColor={'#CCC'}
-                style={{ alignItems: 'center', paddingVertical: 10 }}
+              <IIcons
+                name="ios-paper-outline"
+                size={50}
                 onPress={() => {
                   this.setState({
                     showModal: true
                   });
                 }}
-              >
-                <Text
-                  style={{ color: '#888', fontWeight: '600', fontSize: 20 }}
-                >
-                  計算紙
-                </Text>
-              </TouchableOpacity>
+              />
             </View>
           </Drawer>
         )}
@@ -634,49 +569,3 @@ export default class QuestionPage extends Component {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  bg: {
-    flex: 1,
-    //justifyContent: 'space-around',
-    backgroundColor: '#FFF'
-  },
-  image: {
-    width: '100%'
-    //height: height,
-    //resizeMode: "contain"
-  },
-  buttons: {
-    flex: 0.7,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    backgroundColor: bgcolor
-  },
-  nextbutton: {
-    //padding: 10,
-    //borderRadius: 28
-  },
-  topright: {
-    flexDirection: 'row',
-    flex: 1,
-    alignItems: 'center'
-  },
-  drawer: {
-    backgroundColor: '#11111155',
-    //borderRadius: 5,
-    borderColor: bgcolor
-    //shadowRadius: 3
-  },
-  sketch: {
-    flex: 5,
-    backgroundColor: 'rgba(0,0,0,0.2)'
-  },
-  colorButton: {
-    borderRadius: 50,
-    borderWidth: 8,
-    width: 25,
-    height: 25,
-    marginVertical: 5
-  }
-});

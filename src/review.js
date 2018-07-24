@@ -230,7 +230,11 @@ const styles = StyleSheet.create({
     flex: 1
   },
   scrollViewContainer: {
-    flex: 3
+    flex: 3,
+    borderTopWidth: 8,
+    borderLeftWidth: 8,
+    borderRightWidth: 8,
+    borderColor: Colors.darkOrange
   },
   bottomBarContainer: {
     flex: 1,

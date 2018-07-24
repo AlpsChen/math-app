@@ -21,6 +21,8 @@ import EIcon from 'react-native-vector-icons/Entypo';
 const { width, height } = Dimensions.get('window');
 const texts = ['適性模式', '隨機模式', '簡單模式', '中等模式', '困難模式'];
 
+import { Colors } from './common/constants/colors';
+
 const UserTypeItem = props => {
   const { image, label, labelColor, selected, ...attributes } = props;
   return (
@@ -118,8 +120,11 @@ export default class WelcomePage extends Component {
       } else {
         this.setState({ showModal: false });
         navigate('Second', {
+          timerIndex: getParam('timerIndex', 1),
+          qnums: getParam('qnums', 10),
+          volume: getParam('volume', true),
           mode: getParam('mode', 0),
-          qnums: getParam('qnums', 10)
+          timer: getParam('timer', true)
         });
         // navigate('Third', {
         //   score: 0,
@@ -145,9 +150,9 @@ export default class WelcomePage extends Component {
             <Text style={{ color: 'red' }}>{this.state.errorMessage}</Text>
           ) : null}
           <View style={styles.buttonsContainer}>
-            <Text style={{ fontSize: 30, fontWeight: '800', color: '#FFFF90' }}>
-              {this.state.username}！來算數學吧！
-            </Text>
+            <View style={styles.button}>
+              <Text style={styles.buttonText}>{this.state.username},歡迎</Text>
+            </View>
             <TouchableOpacity
               onPress={() => {
                 this.setState({ showModal: !this.state.showModal });
@@ -159,13 +164,16 @@ export default class WelcomePage extends Component {
             <TouchableOpacity
               onPress={() => {
                 navigate('ModePage', {
+                  initialTimerIndex: getParam('timerIndex', 1),
+                  initialQnums: getParam('qnums', 10),
+                  initialVolume: getParam('volume', true),
                   initialMode: getParam('mode', 0),
-                  initialQnums: getParam('qnums', 10)
+                  initialTimer: getParam('timer', true)
                 });
               }}
               style={styles.button}
             >
-              <Text style={styles.buttonText}>設定模式</Text>
+              <Text style={styles.buttonText}>設定</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => {
@@ -176,43 +184,7 @@ export default class WelcomePage extends Component {
               <Text style={styles.buttonText}>登出</Text>
             </TouchableOpacity>
           </View>
-          {/* <View style={styles.iconsContainer}> */}
-          {/* <MCIcon
-              name={'settings-box'}
-              style={{
-                //borderWidth: 8,
-                //borderRadius: 30,
-                marginTop: 20,
-                //padding: 10,
-                //color: 'black',
-                backgroundColor: 'white',
-                borderColor: '#000099'
-              }}
-              size={100}
-              color={'blue'}
-            /> */}
-          {/* <UserTypeItem
-                label="COOL"
-                labelColor="#ECC841"
-                image={USER_COOL}
-                onPress={() => this.setSelectedType('parent')}
-                selected={selectedType === 'parent'}
-              />
-              <UserTypeItem
-                label="STUDENT"
-                labelColor="#2CA75E"
-                image={USER_STUDENT}
-                onPress={() => this.setSelectedType('child')}
-                selected={selectedType === 'child'}
-              />
-              <UserTypeItem
-                label="HARRY POTTER"
-                labelColor="#36717F"
-                image={USER_HP}
-                onPress={() => this.setSelectedType('teacher')}
-                selected={selectedType === 'teacher'}
-              /> */}
-          {/* </View> */}
+
           <Modal
             isVisible={this.state.showModal}
             supportedOrientations={['portrait', 'landscape']}
@@ -226,12 +198,15 @@ export default class WelcomePage extends Component {
                   {texts[getParam('mode', 0)]}
                 </Text>
                 <Text style={styles.modalText}>{getParam('qnums', 10)}題</Text>
+                {getParam('timer', true) ? (
+                  <Text style={styles.modalText}>時限模式</Text>
+                ) : null}
               </View>
               <TouchableOpacity
                 style={styles.modalButton}
                 onPress={this.detectConnection.bind(this)}
               >
-                <Text style={{ fontSize: 20 }}>確定</Text>
+                <Text style={{ fontSize: 20, fontWeight: 'bold' }}>確定</Text>
               </TouchableOpacity>
             </View>
           </Modal>
@@ -277,7 +252,7 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: '#FFE4B5',
-    padding: 16,
+    padding: 12,
     margin: 10,
     borderRadius: 10,
     shadowRadius: 20,
@@ -289,7 +264,8 @@ const styles = StyleSheet.create({
     //margin: 15,
     color: '#000000',
     //padding: 20,
-    textAlign: 'center'
+    textAlign: 'center',
+    fontWeight: 'bold'
   },
   modal: {
     flex: 1,
@@ -303,19 +279,17 @@ const styles = StyleSheet.create({
   },
   modalText: {
     fontSize: 20,
-    marginTop: 25,
-    color: '#1E90FF',
-    //padding: 20,
-    textAlign: 'center'
+    marginTop: 20,
+    textAlign: 'center',
+    fontWeight: 'bold'
   },
   modalButton: {
-    fontSize: 20,
-    marginTop: 50,
-    color: '#00008B',
+    position: 'absolute',
+    bottom: 20,
+    backgroundColor: Colors.orange,
     padding: 15,
     textAlign: 'center',
-    backgroundColor: '#E6E6FA',
-    shadowRadius: 20,
+    shadowRadius: 10,
     shadowOpacity: 0.5,
     borderRadius: 10
   }

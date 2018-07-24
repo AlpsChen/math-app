@@ -20,6 +20,7 @@
     "react-native-slider": "git+https://github.com/boilerroomtv/react-native-slider.git",
     "react-native-sound": "^0.10.9",
     "react-native-swiper": "^1.5.13",
+    "react-native-switch": "^1.5.0",
     "react-native-vector-icons": "^4.6.0",
     "react-navigation": "^2.6.2",
     "rn-draw": "0.0.6"

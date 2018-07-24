@@ -68,16 +68,6 @@ export default class AccountPage extends Component {
     gesturesEnabled: false
   };
 
-  //   async componentDidMount() {
-  //     await Font.loadAsync({
-  //       'georgia': require('../../../assets/fonts/Georgia.ttf'),
-  //       'regular': require('../../../assets/fonts/Montserrat-Regular.ttf'),
-  //       'light': require('../../../assets/fonts/Montserrat-Light.ttf'),
-  //     });
-
-  //     this.setState({ fontLoaded: true });
-  //   }
-
   selectCategory(selectedCategory) {
     LayoutAnimation.easeInEaseOut();
     this.setState({

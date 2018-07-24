@@ -21,14 +21,19 @@ import ChoiceButton from './components/choicebutton';
 import MCIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import FIcon from 'react-native-vector-icons/Foundation';
 import IIcons from 'react-native-vector-icons/Ionicons';
+import EIcon from 'react-native-vector-icons/Entypo';
+import FAIcon from 'react-native-vector-icons/FontAwesome';
 import Drawer from 'react-native-drawer';
 import MathJax from 'react-native-mathjax';
+import ProgressBar from 'react-native-progress/Bar';
+import Modal from 'react-native-modal';
 import { Audio, PlaybackObject } from 'expo';
 
 import DrawerContent from './components/drawerContent';
 
 import { Colors } from './common/constants/colors';
 import { styles } from '../styles';
+import { timeLimits } from './common/constants/constants';
 
 const iosConfig = {
   clientId:
@@ -54,7 +59,9 @@ export default class QuestionPage extends Component {
     this.difficulty = 'easy'; // current difficulty
     this.index = 0; // index of current question in Firebase
     this.marked = []; // records the marked questions
+    this.mark = false;
     this.correctCount = 0;
+    this.interval = null;
     this.chosenOption = ''; // the option that the user chose
     this.state = {
       data: '', // data of current question
@@ -63,8 +70,11 @@ export default class QuestionPage extends Component {
       renew: true, // true to refresh the question display and buttons
       correct: false, // true if answered correctly
       showModal: false, // true to show modal (計算紙)
-      mark: false, // true if current question is marked
-      isConnected: true
+      barColor: '',
+      isConnected: true,
+      countdown: 1,
+      timeUp: false,
+      displayBar: true
     };
     //Orientation.lockToLandscape();
     chosenEasy.fill(false);
@@ -81,6 +91,7 @@ export default class QuestionPage extends Component {
       'connectionChange',
       this.handleConnectionChange
     );
+    //this.animateCountdown();
   }
 
   handleConnectionChange = isConnected => {
@@ -104,6 +115,8 @@ export default class QuestionPage extends Component {
                 {
                   text: '確定',
                   onPress: () => {
+                    clearInterval(this.interval);
+
                     navigation.goBack();
                   }
                 },
@@ -155,11 +168,11 @@ export default class QuestionPage extends Component {
     if (now) {
       //unmark question
       this.props.navigation.setParams({ mark: false });
-      this.setState({ mark: false });
+      this.mark = false;
     } else {
       //mark question
       this.props.navigation.setParams({ mark: true });
-      this.setState({ mark: true });
+      this.mark = true;
     }
   };
 
@@ -256,14 +269,16 @@ export default class QuestionPage extends Component {
   }
 
   next() {
-    if (this.state.mark && this.num > 0) {
+    const { params } = this.props.navigation.state;
+    if (this.mark && this.num > 0) {
       this.marked.push({
         difficulty: this.difficulty,
         index: this.index,
         userAnswer: this.chosenOption
       });
     }
-    if (this.num < this.props.navigation.state.params.qnums) {
+    if (this.num < params.qnums) {
+      if (params.timer) this.animateCountdown();
       this.num++;
       //console.warn(this.state.correct);
       this.determine_next();
@@ -311,19 +326,22 @@ export default class QuestionPage extends Component {
                 renew: false,
                 correct: false,
                 onClickMark: this.onClickMark.bind(this),
-                mark: false
+                countdown: 1
               });
+              this.mark = false;
             });
         });
     } else {
       //go to scoring page
       var { navigate } = this.props.navigation;
+      clearInterval(this.interval);
       navigate('Third', { score: this.score, marked: this.marked });
     }
   }
 
   showoptions() {
     var options = [];
+    const { params } = this.props.navigation.state;
     for (let i = 0; i < 4; i++) {
       var option = String.fromCharCode('A'.charCodeAt() + i);
       let correctoption = option.localeCompare(this.state.data.answer);
@@ -335,8 +353,9 @@ export default class QuestionPage extends Component {
               close={this.state.shownext ? true : false}
               onColor={correctoption ? 'red' : 'green'}
               shouldshake={correctoption ? true : false}
-              _onPress={() => {
+              _onPress={nowOption => {
                 this.setState({ shownext: true });
+                clearInterval(this.interval);
                 var lastCorrectCount = 0;
                 if (!correctoption) {
                   //the option is correct when correctoption = 0
@@ -347,8 +366,8 @@ export default class QuestionPage extends Component {
                   lastCorrectCount = this.correctCount;
                   this.correctCount = 0;
                 }
-                //this.chosenOption = key;
-                this.renderSound(lastCorrectCount);
+                this.chosenOption = nowOption;
+                if (params.volume) this.renderSound(lastCorrectCount);
               }}
             />
           )}
@@ -477,10 +496,46 @@ export default class QuestionPage extends Component {
     }
   };
 
+  animateCountdown() {
+    let progress = 1;
+    let { params } = this.props.navigation.state;
+    this.setState({
+      barColor: Colors.lightOrange
+    });
+    setTimeout(() => {
+      this.interval = setInterval(() => {
+        progress -= 0.1 / (timeLimits[params.timerIndex][this.difficulty] * 60);
+        if (progress < 0.2) {
+          this.setState({
+            barColor: 'red'
+          });
+        }
+        if (progress < 0) {
+          progress = 0;
+          this.setState({
+            timeUp: true
+          });
+          this.doTimeUp();
+          clearInterval(this.interval);
+        }
+        this.setState({ countdown: progress });
+      }, 100);
+    }, 1000);
+  }
+  doTimeUp = () => {
+    var lastCorrectCount = this.correctCount;
+    this.correctCount = 0;
+    const { params } = this.props.navigation.state;
+    this.chosenOption = '無';
+    if (params.volume) this.renderSound(lastCorrectCount);
+  };
+
   render() {
+    const { params } = this.props.navigation.state;
     return (
       <View style={styles.bg}>
         <StatusBar hidden />
+        {/* {this.state.timeUp ? this.doTimeUp() : null} */}
         {this.state.renew ? (
           <View style={{ flex: 1 }}>
             <View style={{ flex: 2, alignItems: 'center' }}>
@@ -514,8 +569,20 @@ export default class QuestionPage extends Component {
               <DrawerContent color={['#008000', '#FF6347', '#87CEFA']} />
             }
           >
-            ','
             <View style={{ flex: 2, justifyContent: 'center' }}>
+              {params.timer ? (
+                <ProgressBar
+                  width={width - 25}
+                  progress={this.state.countdown}
+                  borderRadius={0}
+                  borderColor={Colors.lightOrange}
+                  borderWidth={0}
+                  color={
+                    this.state.displayBar ? this.state.barColor : 'transparent'
+                  }
+                />
+              ) : null}
+
               {/* display question */}
               <ScrollView>
                 {this.state.data ? (
@@ -563,9 +630,106 @@ export default class QuestionPage extends Component {
                 }}
               />
             </View>
+            {params.timer ? (
+              <View style={{ position: 'absolute', top: 0, right: 2 }}>
+                {this.state.displayBar ? (
+                  <EIcon
+                    name="squared-cross"
+                    size={25}
+                    onPress={() => {
+                      this.setState({ displayBar: false });
+                    }}
+                    style={{ marginTop: -2 }}
+                  />
+                ) : (
+                  <FAIcon
+                    name="check-square"
+                    size={25}
+                    onPress={() => {
+                      this.setState({ displayBar: true });
+                    }}
+                    style={{ marginTop: -2 }}
+                  />
+                )}
+              </View>
+            ) : null}
+            <Modal
+              isVisible={this.state.timeUp}
+              supportedOrientations={['portrait', 'landscape']}
+            >
+              <View style={localStyles.modal}>
+                <Text style={localStyles.modalText}>時間到！</Text>
+                <Text style={localStyles.modalText}>是否標記本題</Text>
+                <View style={localStyles.modalButtonContainer}>
+                  <TouchableOpacity
+                    style={localStyles.modalButton}
+                    onPress={() => {
+                      this.mark = false;
+                      this.setState({
+                        timeUp: false,
+                        renew: true,
+                        showModal: false
+                      });
+                      this.next();
+                    }}
+                  >
+                    <Text style={{ fontSize: 20 }}>否</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={localStyles.modalButton}
+                    onPress={() => {
+                      this.mark = true;
+                      this.setState({
+                        timeUp: false,
+                        renew: true,
+                        showModal: false
+                      });
+                      this.next();
+                    }}
+                  >
+                    <Text style={{ fontSize: 20 }}>是</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Modal>
           </Drawer>
         )}
       </View>
     );
   }
 }
+
+const localStyles = StyleSheet.create({
+  modal: {
+    flex: 1,
+    marginHorizontal: '20%',
+    marginVertical: '10%',
+    backgroundColor: '#FFFFE0',
+    borderRadius: 10,
+    borderColor: '#FFE4B5',
+    borderWidth: 5,
+    alignItems: 'center'
+  },
+  modalText: {
+    fontSize: 20,
+    marginTop: 25,
+    textAlign: 'center'
+  },
+  modalButton: {
+    //position: 'absolute',
+    bottom: 25,
+    backgroundColor: Colors.orange,
+    padding: 10,
+    textAlign: 'center',
+    shadowRadius: 10,
+    shadowOpacity: 0.5,
+    borderRadius: 10,
+    marginHorizontal: 10
+  },
+  modalButtonContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center'
+  }
+});

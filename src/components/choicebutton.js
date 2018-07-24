@@ -42,7 +42,7 @@ export default class ChoiceButton extends Component {
           disabled={this.props.close}
           onPress={() => {
             this.pressed();
-            this.props._onPress();
+            this.props._onPress(this.props.text);
           }}
         >
           <Animatable.View

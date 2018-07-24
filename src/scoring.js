@@ -192,8 +192,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 20,
-    //margin: 15,
-    //padding: 20,
+    fontWeight: 'bold',
     textAlign: 'center'
   }
 });

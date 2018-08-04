@@ -6,7 +6,8 @@ import {
   Dimensions,
   StyleSheet,
   ScrollView,
-  TouchableOpacity
+  TouchableOpacity,
+  Alert
 } from 'react-native';
 import Swiper from 'react-native-swiper';
 import * as firebase from 'firebase';
@@ -24,9 +25,7 @@ renderOptions = props => {
   if (data.A) {
     if (data.A.length + data.B.length + data.C.length + data.D.length < 20) {
       return (
-        <Text
-          style={{ fontSize: 24, marginHorizontal: 20, marginVertical: 20 }}
-        >
+        <Text style={{ fontSize: 24, marginHorizontal: 20, marginTop: 20 }}>
           (A) {'  '}
           {data.A}
           {'    '} (B) {'  '}
@@ -100,20 +99,28 @@ const Slide = props => {
           <View style={styles.iconsContainer}>
             <Button
               icon={<EIcon name="pencil" size={25} />}
-              title={props.displayUserAnswer ? props.data.userAnswer : '   '}
+              title={props.data.userAnswer}
               disabledStyle={styles.buttons}
-              disabledTitleStyle={styles.disabledTitleStyle}
+              disabledTitleStyle={[
+                styles.disabledTitleStyle,
+                {
+                  color: props.displayUserAnswer ? Colors.black : 'transparent'
+                }
+              ]}
               disabled
             />
             <Button
               icon={<FAIcon name="question" size={30} />}
-              title={
-                props.displayCorrectAnswer
-                  ? JSON.parse(props.data.JSON).answer
-                  : '   '
-              }
+              title={JSON.parse(props.data.JSON).answer}
               disabledStyle={styles.buttons}
-              disabledTitleStyle={styles.disabledTitleStyle}
+              disabledTitleStyle={[
+                styles.disabledTitleStyle,
+                {
+                  color: props.displayCorrectAnswer
+                    ? Colors.black
+                    : 'transparent'
+                }
+              ]}
               disabled
             />
             <IIcon
@@ -127,7 +134,7 @@ const Slide = props => {
               name="directions-run"
               size={30}
               onPress={() => {
-                props.navigation.navigate('First');
+                props.navigation.goBack();
               }}
             />
           </View>
@@ -266,7 +273,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   disabledTitleStyle: {
-    color: Colors.black,
     fontWeight: 'bold',
     fontSize: 20
   }

@@ -16,6 +16,7 @@ import FAIcon from 'react-native-vector-icons/FontAwesome';
 import EIcon from 'react-native-vector-icons/Entypo';
 import { Switch } from 'react-native-switch';
 import { ButtonGroup } from 'react-native-elements';
+import { ifIphoneX } from 'react-native-iphone-x-helper';
 
 import { Colors } from './common/constants/colors';
 
@@ -91,7 +92,10 @@ export default class ModePage extends Component {
           <Picker
             selectedValue={this.state.mode}
             style={styles.picker}
-            itemStyle={{ color: '#6495ED', fontWeight: 'bold' }}
+            itemStyle={{
+              color: Colors.lightOrange,
+              fontWeight: 'bold'
+            }}
             onValueChange={(itemValue, itemIndex) =>
               this.setState({ mode: itemValue })
             }
@@ -119,7 +123,7 @@ export default class ModePage extends Component {
             marginTop: -20
           }}
         >
-          <Text style={{ fontSize: 20, fontWeight: 'bold' }}>
+          <Text style={{ fontSize: 20, fontWeight: '900' }}>
             題數：{this.state.qnums}
           </Text>
           <Slider
@@ -129,8 +133,8 @@ export default class ModePage extends Component {
             maximumValue={20}
             step={1}
             style={styles.slider}
-            minimumTrackTintColor={'#6495ED'}
-            thumbTintColor={'#6495ED'}
+            minimumTrackTintColor={Colors.lightOrange}
+            thumbTintColor={Colors.lightOrange}
             //thumbTouchSize={{width: 20, height: 20}}
             thumbStyle={{ size: 5 }}
           />
@@ -306,7 +310,13 @@ export default class ModePage extends Component {
           />
         </View>
         <View style={{ flex: 1.5 }}>{this.renderContent(selectedType)}</View>
-        <View style={{ position: 'absolute', left: 3, bottom: -1 }}>
+        <View
+          style={{
+            position: 'absolute',
+            bottom: -1,
+            ...ifIphoneX({ left: 23 }, { left: 3 })
+          }}
+        >
           <EIcon
             name="squared-cross"
             size={52}
@@ -315,7 +325,13 @@ export default class ModePage extends Component {
             }}
           />
         </View>
-        <View style={{ position: 'absolute', right: 5, bottom: 5 }}>
+        <View
+          style={{
+            position: 'absolute',
+            bottom: 5,
+            ...ifIphoneX({ right: 25 }, { right: 5 })
+          }}
+        >
           <FAIcon
             name="check-square"
             size={50}

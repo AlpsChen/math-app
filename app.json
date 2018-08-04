@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "math-app",
-    "description": "This project is really great.",
+    "name": "會考會考的數學",
+    "description": "這裡有很多會考會考的數學題，慢慢練習你就知道哪些題目真的會考囉。",
     "slug": "math-app",
     "privacy": "public",
     "sdkVersion": "28.0.0",
@@ -13,17 +13,17 @@
     "facebookDisplayName": "wochichiang",
     "splash": {
       "image": "./assets/splashImage.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "updates": {
-      "fallbackToCacheTimeout": 0
+      "resizeMode": "cover",
     },
     "assetBundlePatterns": [
-      "**/*"
+      "assets/icon.png",
+      "assets/bgImage.jpg",
+      "assets/scoringImage.jpg",
+      "assets/splashImage.jpg"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.alpschen.mathApp"
     }
   }
 }

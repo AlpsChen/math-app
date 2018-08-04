@@ -14,7 +14,8 @@ import {
   TouchableHighlight,
   ActivityIndicator,
   NetInfo,
-  StatusBar
+  StatusBar,
+  LayoutAnimation
 } from 'react-native';
 import * as firebase from 'firebase';
 import ChoiceButton from './components/choicebutton';
@@ -34,8 +35,10 @@ import DrawerContent from './components/drawerContent';
 import { Colors } from './common/constants/colors';
 import { styles } from '../styles';
 import { timeLimits } from './common/constants/constants';
+import { soundsCorrect, soundsWrong } from './common/constants/sounds';
+import { ifIphoneX } from 'react-native-iphone-x-helper';
 
-const iosConfig = {
+const firebaseConfig = {
   clientId:
     '163605876535-b8nca0rgug75bphrobpmrpjd02onr2np.apps.googleusercontent.com',
   appId: '1:163605876535:ios:e9b4e1bdb99bad8f',
@@ -44,7 +47,7 @@ const iosConfig = {
   storageBucket: 'myapp1116.appspot.com'
   //messaging:
 };
-firebase.initializeApp(iosConfig);
+firebase.initializeApp(firebaseConfig);
 
 var chosenEasy = [100],
   chosenMedium = [100],
@@ -102,7 +105,9 @@ export default class QuestionPage extends Component {
     const { params } = navigation.state;
     var mark = false;
     return {
-      title: '題目：' + getParam('displaynum', 1) + '/' + getParam('qnums', 10),
+      headerTitle:
+        '題目：' + getParam('displaynum', 1) + '/' + getParam('qnums', 10),
+      headerTitleStyle: { textAlign: 'center' },
       headerStyle: {
         backgroundColor: Colors.orange
       },
@@ -124,7 +129,14 @@ export default class QuestionPage extends Component {
               ]);
             }}
           >
-            <Text style={{ color: 'black', fontWeight: 'bold', fontSize: 18 }}>
+            <Text
+              style={{
+                color: 'black',
+                fontWeight: 'bold',
+                fontSize: 18,
+                ...ifIphoneX({ marginLeft: 15 }, null)
+              }}
+            >
               {'   '}
               離開{'    '}
             </Text>
@@ -270,6 +282,7 @@ export default class QuestionPage extends Component {
 
   next() {
     const { params } = this.props.navigation.state;
+    LayoutAnimation.easeInEaseOut();
     if (this.mark && this.num > 0) {
       this.marked.push({
         difficulty: this.difficulty,
@@ -329,6 +342,7 @@ export default class QuestionPage extends Component {
                 countdown: 1
               });
               this.mark = false;
+              //LayoutAnimation.easeInEaseOut();
             });
         });
     } else {
@@ -378,66 +392,22 @@ export default class QuestionPage extends Component {
   }
 
   renderSound = lastCorrectCount => {
-    switch (this.correctCount) {
-      case 0:
+    //wrong
+    if (this.correctCount == 0) {
+      if (lastCorrectCount >= 3) {
+        this.sound(soundsWrong[3]);
+      } else {
         var i = Math.floor(Math.random() * 3);
-        switch (i) {
-          case 0:
-            this.sound(
-              require('../assets/sounds/wrong-defeat.mp3'),
-              lastCorrectCount >= 3
-            );
-            break;
-          case 1:
-            this.sound(require('../assets/sounds/wrong-executed.mp3'), true);
-            break;
-          case 2:
-            this.sound(
-              require('../assets/sounds/wrong-youHaveBeenSlained.mp3'),
-              true
-            );
-            break;
-        }
-
-        break;
-      case 1:
-        if (this.num == 1)
-          this.sound(require('../assets/sounds/firstBlood.mp3'));
-        else this.sound(require('../assets/sounds/correct.mp3'));
-        break;
-
-      case 2:
-        this.sound(require('../assets/sounds/doubleKill.mp3'));
-        break;
-      case 3:
-        this.sound(require('../assets/sounds/tripleKill.mp3'));
-        break;
-      case 4:
-        this.sound(require('../assets/sounds/quadraKill.mp3'));
-        break;
-      case 5:
-        this.sound(require('../assets/sounds/pentaKill.mp3'));
-        break;
-      case 6:
-        this.sound(require('../assets/sounds/killingSpree.mp3'), false);
-        break;
-      case 7:
-        this.sound(require('../assets/sounds/rampage.mp3'), false);
-        break;
-      case 8:
-        this.sound(require('../assets/sounds/unstoppable.mp3'), false);
-        break;
-      case 9:
-        this.sound(require('../assets/sounds/dominating.mp3'), false);
-        break;
-      case 10:
-        this.sound(require('../assets/sounds/godlike.mp3'), false);
-        break;
-      case this.correctCount > 10:
-        this.sound(require('../assets/sounds/legendary.mp3'), false);
-        break;
-      default:
-        break;
+        this.sound(soundsWrong[i]);
+      }
+    }
+    //correct
+    else if (this.correctCount == 1) {
+      if (this.num == 1) this.sound(soundsCorrect[0].firstBlood);
+      else this.sound(soundsCorrect[0].notFirst);
+    } else {
+      if (this.correctCount > 11) this.correctCount = 11;
+      this.sound(soundsCorrect[this.correctCount - 1]);
     }
   };
 
@@ -445,16 +415,6 @@ export default class QuestionPage extends Component {
     const soundObject = new Expo.Audio.Sound();
     soundObject.loadAsync(position).then(() => {
       soundObject.playAsync();
-      // .then(() => {
-      //   if (shutDown) {
-      //     const soundObjecta = new Expo.Audio.Sound();
-      //     soundObjecta
-      //       .loadAsync(require('../assets/sounds/shutDown.mp3'))
-      //       .then(() => {
-      //         soundObjecta.playAsync();
-      //       });
-      //   }
-      // });
     });
   };
 
@@ -615,6 +575,7 @@ export default class QuestionPage extends Component {
                       this.setState({
                         renew: true
                       });
+                      LayoutAnimation.easeInEaseOut();
                     }
                   }}
                 />
@@ -658,8 +619,12 @@ export default class QuestionPage extends Component {
               supportedOrientations={['portrait', 'landscape']}
             >
               <View style={localStyles.modal}>
-                <Text style={localStyles.modalText}>時間到！</Text>
-                <Text style={localStyles.modalText}>是否標記本題</Text>
+                <Text style={[localStyles.modalText, { fontSize: 28 }]}>
+                  時間到
+                </Text>
+                <Text style={[localStyles.modalText, { fontSize: 20 }]}>
+                  是否標記本題
+                </Text>
                 <View style={localStyles.modalButtonContainer}>
                   <TouchableOpacity
                     style={localStyles.modalButton}
@@ -673,7 +638,7 @@ export default class QuestionPage extends Component {
                       this.next();
                     }}
                   >
-                    <Text style={{ fontSize: 20 }}>否</Text>
+                    <Text style={{ fontSize: 20, fontWeight: 'bold' }}>否</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={localStyles.modalButton}
@@ -687,7 +652,7 @@ export default class QuestionPage extends Component {
                       this.next();
                     }}
                   >
-                    <Text style={{ fontSize: 20 }}>是</Text>
+                    <Text style={{ fontSize: 20, fontWeight: 'bold' }}>是</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -711,8 +676,8 @@ const localStyles = StyleSheet.create({
     alignItems: 'center'
   },
   modalText: {
-    fontSize: 20,
     marginTop: 25,
+    fontWeight: 'bold',
     textAlign: 'center'
   },
   modalButton: {
@@ -721,10 +686,11 @@ const localStyles = StyleSheet.create({
     backgroundColor: Colors.orange,
     padding: 10,
     textAlign: 'center',
-    shadowRadius: 10,
-    shadowOpacity: 0.5,
+    //shadowRadius: 10,
+    //shadowOpacity: 0.5,
     borderRadius: 10,
-    marginHorizontal: 10
+    marginHorizontal: 12,
+    borderWidth: 1.5
   },
   modalButtonContainer: {
     flex: 1,

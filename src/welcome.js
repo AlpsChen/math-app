@@ -64,10 +64,6 @@ export default class WelcomePage extends Component {
     gesturesEnabled: false
   };
 
-  componentWillMount() {
-    //this.props.navigation.setParams({mode: 0})
-  }
-
   signOut = () => {
     firebase
       .auth()
@@ -252,12 +248,12 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: '#FFE4B5',
-    padding: 12,
-    margin: 10,
+    padding: 15,
+    marginVertical: 12,
     borderRadius: 10,
     shadowRadius: 20,
     shadowOpacity: 0.5,
-    width: 200
+    width: 180
   },
   buttonText: {
     fontSize: 20,
@@ -270,7 +266,7 @@ const styles = StyleSheet.create({
   modal: {
     flex: 1,
     marginHorizontal: '37%',
-    marginVertical: '5%',
+    marginVertical: 25,
     backgroundColor: '#FFFFE0',
     borderRadius: 10,
     borderColor: '#FFE4B5',

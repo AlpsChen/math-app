@@ -10,10 +10,13 @@ import {
   UIManager,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
-  Keyboard
+  Keyboard,
+  ScrollView,
+  StatusBar
 } from 'react-native';
 import { Font } from 'expo';
 import { Input, Button } from 'react-native-elements';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 import FAIcon from 'react-native-vector-icons/FontAwesome';
 import FIcon from 'react-native-vector-icons/Feather';
@@ -21,6 +24,7 @@ import SLIcon from 'react-native-vector-icons/SimpleLineIcons';
 
 import IIcon from 'react-native-vector-icons/Ionicons';
 import * as firebase from 'firebase';
+import { Permissions, Notifications } from 'expo';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -43,7 +47,7 @@ const TabSelector = ({ selected }) => {
 export default class AccountPage extends Component {
   constructor(props) {
     super(props);
-
+    this.layoutAnimationActive = false;
     this.state = {
       email: '',
       password: '',
@@ -68,8 +72,17 @@ export default class AccountPage extends Component {
     gesturesEnabled: false
   };
 
+  layoutAnimation() {
+    //if (!this.layoutAnimationActive) {
+    this.layoutAnimationActive = true;
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut, () => {
+      this.layoutAnimationActive = false;
+    });
+    //}
+  }
+
   selectCategory(selectedCategory) {
-    LayoutAnimation.easeInEaseOut();
+    this.layoutAnimation();
     this.setState({
       selectedCategory,
       isLoading: false
@@ -83,7 +96,38 @@ export default class AccountPage extends Component {
     return re.test(email);
   }
 
-  //alpschen02@gmail.com
+  registerForPushNotificationsAsync = async () => {
+    const { status: existingStatus } = await Permissions.getAsync(
+      Permissions.NOTIFICATIONS
+    );
+    let finalStatus = existingStatus;
+
+    // only ask if permissions have not already been determined, because
+    // iOS won't necessarily prompt the user a second time.
+    if (existingStatus !== 'granted') {
+      // Android remote notification permissions are granted during the app
+      // install, so this will only ask on iOS
+      const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+      finalStatus = status;
+    }
+
+    // Stop here if the user did not grant permissions
+    if (finalStatus !== 'granted') {
+      return;
+    }
+
+    // Get the token that uniquely identifies this device
+    //   let token = await Notifications.getExpoPushTokenAsync();
+
+    //   var updates = {};
+    //   updates['/expoToken'] = token;
+    //   firebase
+    //     .database()
+    //     .ref('users')
+    //     .child(user.uid)
+    //     .update(updates);
+  };
+
   login() {
     const { email, password, isEmailValid, isPasswordValid } = this.state;
     this.setState({ isLoading: true });
@@ -98,7 +142,7 @@ export default class AccountPage extends Component {
         })
         .catch(error => {
           //setTimeout(() => {
-          LayoutAnimation.easeInEaseOut();
+          this.layoutAnimation();
           this.setState({
             //email: '',
             password: '',
@@ -139,7 +183,7 @@ export default class AccountPage extends Component {
     } else {
       //email and password check not passed
       //setTimeout(() => {
-      LayoutAnimation.easeInEaseOut();
+      this.layoutAnimation();
       this.setState({
         //email: '',
         password: '',
@@ -201,7 +245,7 @@ export default class AccountPage extends Component {
   }
 
   renew() {
-    LayoutAnimation.easeInEaseOut();
+    this.layoutAnimation();
     this.setState({
       errorMessage: '',
       isEmailValid: true,
@@ -232,16 +276,16 @@ export default class AccountPage extends Component {
               email: email
             })
             .then(() => {
-              this.setState({ isLoading: false });
-              //console.log('a');
-              this.props.navigation.navigate('First');
-              //console.log('b');
+              this.registerForPushNotificationsAsync().then(() => {
+                this.setState({ isLoading: false });
+                this.props.navigation.navigate('First');
+              });
             })
             .catch(error => console.log(error.Message));
         })
         .catch(error => {
           //setTimeout(() => {
-          LayoutAnimation.easeInEaseOut();
+          this.layoutAnimation();
           this.setState({
             //email: '',
             password: '',
@@ -273,7 +317,7 @@ export default class AccountPage extends Component {
     } else {
       //email and password check not passed
       //setTimeout(() => {
-      LayoutAnimation.easeInEaseOut();
+      this.layoutAnimation();
       this.setState({
         //email: '',
         password: '',
@@ -293,174 +337,137 @@ export default class AccountPage extends Component {
     var isLoginPage = this.state.selectedCategory === 0;
     var isSignUpPage = this.state.selectedCategory === 1;
     return (
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View style={styles.container}>
-          {/* <ImageBackground
-          source={BG_IMAGE}
-          style={styles.bgImage}
-        > */}
-          <View style={styles.rowContainer}>
-            {/* <View style={styles.titleContainer}>
-              <View style={{ flexDirection: 'row' }}>
-                <Text style={styles.titleText}>BEAUX</Text>
+      <View style={styles.container}>
+        <StatusBar hidden />
+        <KeyboardAwareScrollView enableOnAndroid>
+          <TouchableWithoutFeedback
+            onPress={Keyboard.dismiss}
+            accessible={false}
+          >
+            <View
+              style={styles.rowContainer}
+              onLayout={() => {
+                console.log('a');
+              }}
+            >
+              <View style={styles.buttonContainer}>
+                <Button
+                  disabled={this.state.isLoading}
+                  clear
+                  activeOpacity={0.7}
+                  onPress={() => this.selectCategory(0)}
+                  containerStyle={{
+                    marginBottom: 30,
+                    borderColor: isLoginPage
+                      ? 'white'
+                      : 'rgba(255, 255, 255, 0.35)',
+                    borderWidth: 2,
+                    borderRadius: 10
+                  }}
+                  titleStyle={[
+                    styles.categoryText,
+                    isLoginPage ? { opacity: 1 } : null
+                  ]}
+                  title={'登入'}
+                />
+                <Button
+                  disabled={this.state.isLoading}
+                  clear
+                  activeOpacity={0.7}
+                  onPress={() => this.selectCategory(1)}
+                  containerStyle={{
+                    marginTop: 30,
+                    borderColor: isSignUpPage
+                      ? 'white'
+                      : 'rgba(255, 255, 255, 0.35)',
+                    borderWidth: 2,
+                    borderRadius: 10
+                  }}
+                  titleStyle={[
+                    styles.categoryText,
+                    isSignUpPage ? { opacity: 1 } : null
+                  ]}
+                  title={'註冊'}
+                />
               </View>
-              <View style={{ marginTop: -10, marginLeft: 10 }}>
-                <Text style={styles.titleText}>VOYAGES</Text>
+              <View style={styles.selectorContainer}>
+                <TabSelector selected={isLoginPage} />
+                <TabSelector selected={isSignUpPage} />
               </View>
-            </View> */}
-            <View style={styles.buttonContainer}>
-              <Button
-                disabled={this.state.isLoading}
-                clear
-                activeOpacity={0.7}
-                onPress={() => this.selectCategory(0)}
-                containerStyle={{
-                  marginBottom: 30,
-                  borderColor: isLoginPage
-                    ? 'white'
-                    : 'rgba(255, 255, 255, 0.35)',
-                  borderWidth: 2,
-                  borderRadius: 10
-                }}
-                titleStyle={[
-                  styles.categoryText,
-                  isLoginPage ? { opacity: 1 } : null
-                ]}
-                title={'登入'}
-              />
-              <Button
-                disabled={this.state.isLoading}
-                clear
-                activeOpacity={0.7}
-                onPress={() => this.selectCategory(1)}
-                containerStyle={{
-                  marginTop: 30,
-                  borderColor: isSignUpPage
-                    ? 'white'
-                    : 'rgba(255, 255, 255, 0.35)',
-                  borderWidth: 2,
-                  borderRadius: 10
-                }}
-                titleStyle={[
-                  styles.categoryText,
-                  isSignUpPage ? { opacity: 1 } : null
-                ]}
-                title={'註冊'}
-              />
-            </View>
-            <View style={styles.selectorContainer}>
-              <TabSelector selected={isLoginPage} />
-              <TabSelector selected={isSignUpPage} />
-            </View>
 
-            {/* <KeyboardAvoidingView
+              {/* <KeyboardAvoidingView
               //contentContainerStyle={styles.loginContainer}
               behavior="position"
             > */}
-            <View style={styles.formContainer}>
-              {this.state.errorMessage ? (
-                <View style={{ alignSelf: 'flex-start', marginLeft: 25 }}>
-                  <Text style={{ color: '#FF2D00', fontSize: 12 }}>
-                    {this.state.errorMessage}
-                  </Text>
-                </View>
-              ) : null}
-              {isSignUpPage ? (
+              <View style={styles.formContainer}>
+                {this.state.errorMessage ? (
+                  <View style={{ alignSelf: 'flex-start', marginLeft: 25 }}>
+                    <Text style={{ color: '#FF2D00', fontSize: 12 }}>
+                      {this.state.errorMessage}
+                    </Text>
+                  </View>
+                ) : null}
+                {isSignUpPage ? (
+                  <Input
+                    leftIcon={
+                      <FIcon
+                        name="user"
+                        color="rgba(0, 0, 0, 0.38)"
+                        size={25}
+                        style={{ backgroundColor: 'transparent' }}
+                        //iconStyle={{ left: -5 }}
+                      />
+                    }
+                    value={this.state.username}
+                    keyboardAppearance="light"
+                    autoCorrect={false}
+                    keyboardType="default"
+                    returnKeyType={'next'}
+                    containerStyle={{
+                      borderBottomColor: 'rgba(0, 0, 0, 0.38)'
+                    }}
+                    inputStyle={{ marginLeft: 10 }}
+                    placeholder={'暱稱'}
+                    //ref={input => (this.confirmationInput = input)}
+                    onSubmitEditing={() => this.emailInput.focus()}
+                    onChangeText={username => {
+                      this.setState({ username });
+                      //this.renew();
+                    }}
+                  />
+                ) : null}
                 <Input
                   leftIcon={
-                    <FIcon
-                      name="user"
+                    <FAIcon
+                      name="envelope-o"
                       color="rgba(0, 0, 0, 0.38)"
                       size={25}
                       style={{ backgroundColor: 'transparent' }}
-                      //iconStyle={{ left: -5 }}
                     />
                   }
-                  value={this.state.username}
+                  value={this.state.email}
                   keyboardAppearance="light"
+                  autoFocus={false}
+                  autoCapitalize="none"
                   autoCorrect={false}
-                  keyboardType="default"
-                  returnKeyType={'next'}
-                  containerStyle={{
-                    borderBottomColor: 'rgba(0, 0, 0, 0.38)'
+                  keyboardType="email-address"
+                  returnKeyType="next"
+                  //containerStyle={{ marginLeft: 10 }}
+                  placeholder={'電子郵件'}
+                  containerStyle={[
+                    isSignUpPage ? { marginTop: 16 } : null,
+                    { borderBottomColor: 'rgba(0, 0, 0, 0.38)' }
+                  ]}
+                  ref={input => (this.emailInput = input)}
+                  onSubmitEditing={() => this.passwordInput.focus()}
+                  onChangeText={email => {
+                    this.setState({ email });
+                    this.renew();
                   }}
-                  inputStyle={{ marginLeft: 10 }}
-                  placeholder={'暱稱'}
-                  //ref={input => (this.confirmationInput = input)}
-                  onSubmitEditing={() => this.emailInput.focus()}
-                  onChangeText={username => {
-                    this.setState({ username });
-                    //this.renew();
-                  }}
+                  errorMessage={
+                    this.state.isEmailValid ? null : '請輸入有效電子郵件'
+                  }
                 />
-              ) : null}
-              <Input
-                leftIcon={
-                  <FAIcon
-                    name="envelope-o"
-                    color="rgba(0, 0, 0, 0.38)"
-                    size={25}
-                    style={{ backgroundColor: 'transparent' }}
-                  />
-                }
-                value={this.state.email}
-                keyboardAppearance="light"
-                autoFocus={false}
-                autoCapitalize="none"
-                autoCorrect={false}
-                keyboardType="email-address"
-                returnKeyType="next"
-                //containerStyle={{ marginLeft: 10 }}
-                placeholder={'電子郵件'}
-                containerStyle={[
-                  isSignUpPage ? { marginTop: 16 } : null,
-                  { borderBottomColor: 'rgba(0, 0, 0, 0.38)' }
-                ]}
-                ref={input => (this.emailInput = input)}
-                onSubmitEditing={() => this.passwordInput.focus()}
-                onChangeText={email => {
-                  this.setState({ email });
-                  this.renew();
-                }}
-                errorMessage={
-                  this.state.isEmailValid ? null : '請輸入有效電子郵件'
-                }
-              />
-              <Input
-                leftIcon={
-                  <SLIcon
-                    name="lock"
-                    color="rgba(0, 0, 0, 0.38)"
-                    size={25}
-                    style={{ backgroundColor: 'transparent' }}
-                  />
-                }
-                value={this.state.password}
-                keyboardAppearance="light"
-                autoCapitalize="none"
-                autoCorrect={false}
-                secureTextEntry={true}
-                returnKeyType={isSignUpPage ? 'next' : 'done'}
-                blurOnSubmit={true}
-                containerStyle={{
-                  marginTop: 16,
-                  borderBottomColor: 'rgba(0, 0, 0, 0.38)'
-                }}
-                inputStyle={{ marginLeft: 10 }}
-                placeholder={'密碼'}
-                ref={input => (this.passwordInput = input)}
-                onSubmitEditing={() =>
-                  isSignUpPage ? this.confirmationInput.focus() : this.login()
-                }
-                onChangeText={password => {
-                  this.setState({ password });
-                  this.renew();
-                }}
-                errorMessage={
-                  this.state.isPasswordValid ? null : '密碼長度需至少為8字元'
-                }
-              />
-              {isSignUpPage ? (
                 <Input
                   leftIcon={
                     <SLIcon
@@ -470,73 +477,97 @@ export default class AccountPage extends Component {
                       style={{ backgroundColor: 'transparent' }}
                     />
                   }
-                  value={this.state.passwordConfirmation}
-                  secureTextEntry={true}
+                  value={this.state.password}
                   keyboardAppearance="light"
                   autoCapitalize="none"
                   autoCorrect={false}
-                  keyboardType="default"
-                  returnKeyType={'done'}
+                  secureTextEntry={true}
+                  returnKeyType={isSignUpPage ? 'next' : 'done'}
                   blurOnSubmit={true}
                   containerStyle={{
                     marginTop: 16,
                     borderBottomColor: 'rgba(0, 0, 0, 0.38)'
                   }}
                   inputStyle={{ marginLeft: 10 }}
-                  placeholder={'確認密碼'}
-                  ref={input => (this.confirmationInput = input)}
-                  onSubmitEditing={this.signUp}
-                  onChangeText={passwordConfirmation => {
-                    this.setState({ passwordConfirmation });
+                  placeholder={'密碼'}
+                  ref={input => (this.passwordInput = input)}
+                  onSubmitEditing={() =>
+                    isSignUpPage ? this.confirmationInput.focus() : this.login()
+                  }
+                  onChangeText={password => {
+                    this.setState({ password });
                     this.renew();
                   }}
                   errorMessage={
-                    this.state.isConfirmationValid ? null : '兩密碼不相同'
+                    this.state.isPasswordValid ? null : '密碼長度需至少為8字元'
                   }
                 />
-              ) : null}
-              {/* <View style={{ flexDirection: 'row' }}> */}
+                {isSignUpPage ? (
+                  <Input
+                    leftIcon={
+                      <SLIcon
+                        name="lock"
+                        color="rgba(0, 0, 0, 0.38)"
+                        size={25}
+                        style={{ backgroundColor: 'transparent' }}
+                      />
+                    }
+                    value={this.state.passwordConfirmation}
+                    secureTextEntry={true}
+                    keyboardAppearance="light"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    keyboardType="default"
+                    returnKeyType={'done'}
+                    blurOnSubmit={true}
+                    containerStyle={{
+                      marginTop: 16,
+                      borderBottomColor: 'rgba(0, 0, 0, 0.38)'
+                    }}
+                    inputStyle={{ marginLeft: 10 }}
+                    placeholder={'確認密碼'}
+                    ref={input => (this.confirmationInput = input)}
+                    onSubmitEditing={this.signUp}
+                    onChangeText={passwordConfirmation => {
+                      this.setState({ passwordConfirmation });
+                      this.renew();
+                    }}
+                    errorMessage={
+                      this.state.isConfirmationValid ? null : '兩密碼不相同'
+                    }
+                  />
+                ) : null}
+                {/* <View style={{ flexDirection: 'row' }}> */}
 
-              {isLoginPage ? (
-                <IIcon
-                  name="logo-facebook"
-                  color="#3b5998"
-                  onPress={this.loginFb.bind(this)}
-                  size={50}
-                  style={styles.fbButton}
-                  borderRadius={10}
+                {isLoginPage ? (
+                  <IIcon
+                    name="logo-facebook"
+                    color="#3b5998"
+                    onPress={this.loginFb.bind(this)}
+                    size={50}
+                    style={styles.fbButton}
+                    borderRadius={10}
+                  />
+                ) : null}
+                <Button
+                  buttonStyle={styles.loginButton}
+                  containerStyle={{
+                    marginTop: 25,
+                    flex: 0,
+                    alignItems: 'center'
+                  }}
+                  activeOpacity={0.8}
+                  title={isLoginPage ? '登入' : '註冊'}
+                  onPress={isLoginPage ? this.login : this.signUp}
+                  titleStyle={styles.loginTextButton}
+                  loading={this.state.isLoading}
+                  disabled={this.state.isLoading}
                 />
-              ) : null}
-              <Button
-                buttonStyle={styles.loginButton}
-                containerStyle={{
-                  marginTop: 25,
-                  flex: 0,
-                  alignItems: 'center'
-                }}
-                activeOpacity={0.8}
-                title={isLoginPage ? '登入' : '註冊'}
-                onPress={isLoginPage ? this.login : this.signUp}
-                titleStyle={styles.loginTextButton}
-                loading={this.state.isLoading}
-                disabled={this.state.isLoading}
-              />
-              {/* </View> */}
+              </View>
             </View>
-            {/* </KeyboardAvoidingView> */}
-
-            {/* <View style={styles.helpContainer}>
-            <Button
-              title={'Need help ?'}
-              titleStyle={{ color: 'green' }}
-              buttonStyle={{ backgroundColor: 'transparent' }}
-              underlayColor="transparent"
-              onPress={() => console.log('Account created')}
-            />
-          </View> */}
-          </View>
-        </View>
-      </TouchableWithoutFeedback>
+          </TouchableWithoutFeedback>
+        </KeyboardAwareScrollView>
+      </View>
     );
   }
 }
@@ -553,6 +584,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center'
+
+    //alignSelf: 'center'
   },
   buttonContainer: {
     //flex: 1,
@@ -562,10 +595,8 @@ const styles = StyleSheet.create({
     //left: 20
   },
   selectorContainer: {
-    //height: 20,
     flexDirection: 'column',
     alignItems: 'center'
-    //justifyContent: 'center'
   },
   selected: {
     //position: 'absolute',
@@ -595,11 +626,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     height: 50,
     width: 200
-  },
-  titleContainer: {
-    height: 150,
-    backgroundColor: 'transparent',
-    justifyContent: 'center'
   },
   formContainer: {
     backgroundColor: 'white',

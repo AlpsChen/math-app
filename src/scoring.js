@@ -5,7 +5,9 @@ import {
   Text,
   View,
   ImageBackground,
-  Image
+  Image,
+  Alert,
+  LayoutAnimation
 } from 'react-native';
 import * as Progress from 'react-native-progress';
 import { Asset } from 'expo';
@@ -52,20 +54,24 @@ export default class ScoringPage extends Component {
         speed += 1;
         if (progress > params.score) {
           progress = params.score;
+          LayoutAnimation.easeInEaseOut();
           this.setState({
             finished: true
           });
         }
         this.setState({ score: progress });
       }, 100);
-    }, 1500);
+    }, 500);
   }
 
   addMarked() {
     let { marked } = this.props.navigation.state.params;
     let { navigate } = this.props.navigation;
     if (marked.length == 0) {
-      alert('沒有難題哦！');
+      Alert.alert('你沒有標記難題哦', '', [
+        { text: '下次會記得', onPress: () => {}, style: 'cancel' },
+        { text: '了解', onPress: () => {} }
+      ]);
     } else {
       for (let i = 0; i < marked.length; i++) {
         let difficulty = marked[i].difficulty;
@@ -89,16 +95,22 @@ export default class ScoringPage extends Component {
     }
   }
 
+  navigateToReview = () => {
+    let { navigate } = this.props.navigation;
+    navigate('ReviewPage', {
+      marked: arr
+    });
+    this.setState({
+      downloadFinished: false
+    });
+  };
+
   render() {
     let { navigate } = this.props.navigation;
     let { params } = this.props.navigation.state;
     return (
       <View style={styles.bg}>
-        {this.state.downloadFinished
-          ? navigate('ReviewPage', {
-              marked: arr
-            })
-          : null}
+        {this.state.downloadFinished ? this.navigateToReview() : null}
         <ImageBackground
           source={bgImage}
           style={styles.bgImage}
@@ -187,7 +199,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     shadowRadius: 5,
     shadowOpacity: 0.5,
-    width: 120,
+    width: 150,
     marginHorizontal: 20
   },
   buttonText: {

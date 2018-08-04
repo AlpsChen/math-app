@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View, StatusBar } from 'react-native';
 
 import { createStackNavigator } from 'react-navigation';
 import WelcomePage from './src/welcome';
@@ -10,8 +10,8 @@ import ReviewPage from './src/review';
 import OnboardingPage from './src/onboarding';
 import AccountPage from './src/account';
 import checkIfFirstLaunch from './src/components/checkIfFirstLaunch';
-//import HeaderBackButton from 'react-navigation/src/views/Header/HeaderBackButton';
 import * as firebase from 'firebase';
+import { Notifications } from 'expo';
 
 const routeConfig = {
   First: { screen: WelcomePage },
@@ -31,6 +31,20 @@ const LoginNavigation = createStackNavigator(routeConfig, {
 const OnboardingNavigation = createStackNavigator(routeConfig, {
   initialRouteName: 'OnboardingPage'
 });
+const localNotification = {
+  title: '會考的數學會考',
+  body: '每天練習可以增加手感ㄛ',
+  ios: { sound: true }
+};
+const schedulingOptions = {
+  time: 1533038400,
+  repeat: 'day'
+};
+
+Notifications.scheduleLocalNotificationAsync(
+  localNotification,
+  schedulingOptions
+);
 
 export default class App extends Component {
   state = {
@@ -52,14 +66,15 @@ export default class App extends Component {
   render() {
     console.disableYellowBox = true;
     const { checkedAsyncStorage, isFirstLaunch, initialRoute } = this.state;
-    if (!checkedAsyncStorage) {
-      return null;
-    }
-    if (isFirstLaunch) return <OnboardingNavigation />;
-    else if (initialRoute === 'First') return <FirstNavigation />;
-    else if (initialRoute === 'Login') return <LoginNavigation />;
-    else return null;
-    //return <OnboardingNavigation />;
+    // if (!checkedAsyncStorage) {
+    //   return null;
+    // }
+    // if (isFirstLaunch) return <OnboardingNavigation />;
+    // else if (initialRoute === 'First') return <FirstNavigation />;
+    // else if (initialRoute === 'Login') return <LoginNavigation />;
+    // else return null;
+    //
+    return <OnboardingNavigation />;
   }
 }
 

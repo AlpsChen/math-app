@@ -7,10 +7,10 @@ import QuestionPage from './src/question';
 import ScoringPage from './src/scoring';
 import ModePage from './src/mode';
 import ReviewPage from './src/review';
-import OnboardingPage from './src/onboarding';
+import OnboardingPageiOS from './src/onboardingiOS';
 import AccountPage from './src/account';
+import OnboardingPageAndroid from './src/onboardingAndroid';
 import checkIfFirstLaunch from './src/components/checkIfFirstLaunch';
-import * as firebase from 'firebase';
 import { Notifications } from 'expo';
 
 const routeConfig = {
@@ -20,7 +20,8 @@ const routeConfig = {
   ModePage,
   ReviewPage,
   AccountPage,
-  OnboardingPage
+  OnboardingPageAndroid,
+  OnboardingPageiOS
 };
 const FirstNavigation = createStackNavigator(routeConfig, {
   initialRouteName: 'First'
@@ -29,7 +30,8 @@ const LoginNavigation = createStackNavigator(routeConfig, {
   initialRouteName: 'AccountPage'
 });
 const OnboardingNavigation = createStackNavigator(routeConfig, {
-  initialRouteName: 'OnboardingPage'
+  initialRouteName:
+    Platform.OS === 'ios' ? 'OnboardingPageiOS' : 'OnboardingPageAndroid'
 });
 const localNotification = {
   title: '會考的數學會考',
@@ -58,11 +60,6 @@ export default class App extends Component {
     this.setState({ isFirstLaunch, checkedAsyncStorage: true });
   }
 
-  componentDidMount() {
-    firebase.auth().onAuthStateChanged(user => {
-      this.setState({ initialRoute: user ? 'First' : 'Login' });
-    });
-  }
   render() {
     console.disableYellowBox = true;
     const { checkedAsyncStorage, isFirstLaunch, initialRoute } = this.state;

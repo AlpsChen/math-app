@@ -36,7 +36,7 @@ const Next = ({ isLight, ...props }) => (
 UIManager.setLayoutAnimationEnabledExperimental &&
   UIManager.setLayoutAnimationEnabledExperimental(true);
 
-export default class OnboardingPage extends Component {
+export default class OnboardingPageiOS extends Component {
   static navigationOptions = {
     header: null,
     gesturesEnabled: false

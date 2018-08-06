@@ -266,7 +266,8 @@ const styles = StyleSheet.create({
   modal: {
     flex: 1,
     marginHorizontal: '37%',
-    marginVertical: 25,
+    //marginVertical: 25,
+    height: 300,
     backgroundColor: '#FFFFE0',
     borderRadius: 10,
     borderColor: '#FFE4B5',

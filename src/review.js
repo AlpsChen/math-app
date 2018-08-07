@@ -7,7 +7,8 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert
+  Alert,
+  Platform
 } from 'react-native';
 import Swiper from 'react-native-swiper';
 import * as firebase from 'firebase';
@@ -77,8 +78,8 @@ const Slide = props => {
             <Text style={styles.text}>
               {JSON.parse(props.data.JSON).content}
               {'\n'}
-              {renderOptions(props.data)}
             </Text>
+            {renderOptions(props.data)}
           </ScrollView>
         </View>
         <View style={styles.bottomBarContainer}>
@@ -130,7 +131,11 @@ const Slide = props => {
               onPress={props.open}
             />
             <MIcon
-              style={styles.runIcon}
+              style={
+                Platform.OS === 'ios'
+                  ? styles.runIconiOS
+                  : styles.runIconAndroid
+              }
               name="directions-run"
               size={30}
               onPress={() => {
@@ -228,6 +233,7 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 24,
     marginHorizontal: 20,
+    //fontFamily: 'serif',
     marginVertical: 10
   },
   image: {
@@ -258,12 +264,21 @@ const styles = StyleSheet.create({
     borderWidth: 5,
     borderColor: Colors.black
   },
-  runIcon: {
+  runIconiOS: {
     marginHorizontal: 20,
     borderWidth: 5,
     borderRadius: 10,
     paddingVertical: 2,
     paddingHorizontal: 2
+  },
+  runIconAndroid: {
+    marginHorizontal: 20,
+    borderWidth: 5,
+    borderRadius: 10,
+    //paddingBottom: 2,
+    paddingTop: 10,
+    paddingLeft: 10
+    //paddingRight: 2
   },
   iconsContainer: {
     position: 'absolute',

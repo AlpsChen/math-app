@@ -6,9 +6,11 @@ import {
   View,
   TouchableOpacity,
   Picker,
-  LayoutAnimation
+  LayoutAnimation,
+  Slider,
+  Platform
 } from 'react-native';
-import Slider from 'react-native-slider';
+import SlideriOS from 'react-native-slider';
 import SLIcon from 'react-native-vector-icons/SimpleLineIcons';
 import MCIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import FIcon from 'react-native-vector-icons/Feather';
@@ -126,18 +128,33 @@ export default class ModePage extends Component {
           <Text style={{ fontSize: 20, fontWeight: '900' }}>
             題數：{this.state.qnums}
           </Text>
-          <Slider
-            value={this.state.qnums}
-            onValueChange={value => this.setState({ qnums: value })}
-            minimumValue={5}
-            maximumValue={20}
-            step={1}
-            style={styles.slider}
-            minimumTrackTintColor={Colors.lightOrange}
-            thumbTintColor={Colors.lightOrange}
-            //thumbTouchSize={{width: 20, height: 20}}
-            thumbStyle={{ size: 5 }}
-          />
+          {Platform.OS === 'ios' ? (
+            <SlideriOS
+              value={this.state.qnums}
+              onValueChange={value => this.setState({ qnums: value })}
+              minimumValue={5}
+              maximumValue={20}
+              step={1}
+              style={styles.slider}
+              minimumTrackTintColor={Colors.lightOrange}
+              thumbTintColor={Colors.lightOrange}
+              //thumbTouchSize={{width: 20, height: 20}}
+              //thumbStyle={{ size: 5 }}
+            />
+          ) : (
+            <Slider
+              value={this.state.qnums}
+              onValueChange={value => this.setState({ qnums: value })}
+              minimumValue={5}
+              maximumValue={20}
+              step={1}
+              style={[styles.slider, { marginTop: 20 }]}
+              minimumTrackTintColor={Colors.lightOrange}
+              thumbTintColor={Colors.lightOrange}
+              //thumbTouchSize={{width: 20, height: 20}}
+              //thumbStyle={{ size: 5 }}
+            />
+          )}
         </View>
       );
     } else if (now == 'selectVolume') {

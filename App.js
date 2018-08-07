@@ -8,10 +8,12 @@ import ScoringPage from './src/scoring';
 import ModePage from './src/mode';
 import ReviewPage from './src/review';
 import OnboardingPageiOS from './src/onboardingiOS';
-import AccountPage from './src/account';
+import AccountPageiOS from './src/accountiOS';
+import AccountPageAndroid from './src/accountAndroid';
 import OnboardingPageAndroid from './src/onboardingAndroid';
 import checkIfFirstLaunch from './src/components/checkIfFirstLaunch';
 import { Notifications } from 'expo';
+import * as firebase from 'firebase';
 
 const routeConfig = {
   First: { screen: WelcomePage },
@@ -19,7 +21,8 @@ const routeConfig = {
   Third: { screen: ScoringPage },
   ModePage,
   ReviewPage,
-  AccountPage,
+  AccountPageAndroid,
+  AccountPageiOS,
   OnboardingPageAndroid,
   OnboardingPageiOS
 };
@@ -27,7 +30,8 @@ const FirstNavigation = createStackNavigator(routeConfig, {
   initialRouteName: 'First'
 });
 const LoginNavigation = createStackNavigator(routeConfig, {
-  initialRouteName: 'AccountPage'
+  initialRouteName:
+    Platform.OS === 'ios' ? 'AccountPageiOS' : 'AccountPageAndroid'
 });
 const OnboardingNavigation = createStackNavigator(routeConfig, {
   initialRouteName:
@@ -60,18 +64,24 @@ export default class App extends Component {
     this.setState({ isFirstLaunch, checkedAsyncStorage: true });
   }
 
+  componentDidMount() {
+    firebase.auth().onAuthStateChanged(user => {
+      this.setState({ initialRoute: user ? 'First' : 'Login' });
+    });
+  }
+
   render() {
     console.disableYellowBox = true;
     const { checkedAsyncStorage, isFirstLaunch, initialRoute } = this.state;
-    // if (!checkedAsyncStorage) {
-    //   return null;
-    // }
-    // if (isFirstLaunch) return <OnboardingNavigation />;
-    // else if (initialRoute === 'First') return <FirstNavigation />;
-    // else if (initialRoute === 'Login') return <LoginNavigation />;
-    // else return null;
-    //
-    return <OnboardingNavigation />;
+    if (!checkedAsyncStorage) {
+      return null;
+    }
+    if (isFirstLaunch) return <OnboardingNavigation />;
+    else if (initialRoute === 'First') return <FirstNavigation />;
+    else if (initialRoute === 'Login') return <LoginNavigation />;
+    else return null;
+
+    //return <OnboardingNavigation />;
   }
 }
 

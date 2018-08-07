@@ -54,7 +54,7 @@ export default class OnboardingPageiOS extends Component {
           bottomBarHighlight={false}
           onDone={() => {
             LayoutAnimation.easeInEaseOut();
-            navigate('AccountPage');
+            navigate('AccountPageiOS');
           }}
           pages={[
             {

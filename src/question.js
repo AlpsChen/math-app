@@ -53,6 +53,7 @@ var chosenEasy = [100],
   chosenMedium = [100],
   chosenHard = [100];
 const { height, width } = Dimensions.get('screen');
+const IOS = Platform.OS === 'ios';
 
 export default class QuestionPage extends Component {
   constructor(props) {
@@ -105,12 +106,14 @@ export default class QuestionPage extends Component {
     const { params } = navigation.state;
     var mark = false;
     return {
-      headerTitle:
-        '題目：' + getParam('displaynum', 1) + '/' + getParam('qnums', 10),
-      headerTitleStyle: { textAlign: 'center' },
-      headerStyle: {
-        backgroundColor: Colors.orange
-      },
+      title: '題目：' + getParam('displaynum', 1) + '/' + getParam('qnums', 10),
+      headerTitleStyle: { marginLeft: 50 },
+      headerStyle: [
+        {
+          backgroundColor: Colors.orange
+        },
+        Platform.OS === 'android' ? { marginTop: -24, height: 35 } : null
+      ],
       //header: <ImageHeader/>,
       headerLeft: (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -494,7 +497,7 @@ export default class QuestionPage extends Component {
     const { params } = this.props.navigation.state;
     return (
       <View style={styles.bg}>
-        <StatusBar hidden />
+        <StatusBar hidden translucent />
         {/* {this.state.timeUp ? this.doTimeUp() : null} */}
         {this.state.renew ? (
           <View style={{ flex: 1 }}>
@@ -532,7 +535,7 @@ export default class QuestionPage extends Component {
             <View style={{ flex: 2, justifyContent: 'center' }}>
               {params.timer ? (
                 <ProgressBar
-                  width={width - 25}
+                  width={Platform.OS === 'ios' ? width - 25 : width - 80}
                   progress={this.state.countdown}
                   borderRadius={0}
                   borderColor={Colors.lightOrange}
@@ -546,7 +549,7 @@ export default class QuestionPage extends Component {
               {/* display question */}
               <ScrollView>
                 {this.state.data ? (
-                  <View>
+                  <View style={{ marginBottom: 20 }}>
                     <Text
                       style={{
                         fontSize: 24,
@@ -566,7 +569,7 @@ export default class QuestionPage extends Component {
               <View style={styles.nextbutton}>
                 <MCIcon
                   name={'arrow-right-bold-box'}
-                  size={85}
+                  size={Platform.OS === 'ios' ? 85 : 80}
                   color={this.state.shownext ? Colors.white : Colors.orange}
                   onPress={() => {
                     //console.warn(this.state.shownext);
@@ -618,14 +621,26 @@ export default class QuestionPage extends Component {
               isVisible={this.state.timeUp}
               supportedOrientations={['portrait', 'landscape']}
             >
-              <View style={localStyles.modal}>
-                <Text style={[localStyles.modalText, { fontSize: 28 }]}>
-                  時間到
-                </Text>
-                <Text style={[localStyles.modalText, { fontSize: 20 }]}>
-                  是否標記本題
-                </Text>
-                <View style={localStyles.modalButtonContainer}>
+              <View
+                style={[
+                  localStyles.modal,
+                  IOS ? { marginVertical: '10%' } : { marginVertical: '5%' }
+                ]}
+              >
+                <View>
+                  <Text style={[localStyles.modalText, { fontSize: 28 }]}>
+                    時間到
+                  </Text>
+                  <Text style={[localStyles.modalText, { fontSize: 20 }]}>
+                    是否標記本題
+                  </Text>
+                </View>
+                <View
+                  style={[
+                    localStyles.modalButtonContainer,
+                    IOS ? { bottom: 25 } : { bottom: 10 }
+                  ]}
+                >
                   <TouchableOpacity
                     style={localStyles.modalButton}
                     onPress={() => {
@@ -668,7 +683,6 @@ const localStyles = StyleSheet.create({
   modal: {
     flex: 1,
     marginHorizontal: '20%',
-    marginVertical: '10%',
     backgroundColor: '#FFFFE0',
     borderRadius: 10,
     borderColor: '#FFE4B5',
@@ -682,7 +696,7 @@ const localStyles = StyleSheet.create({
   },
   modalButton: {
     //position: 'absolute',
-    bottom: 25,
+    //bottom: 25,
     backgroundColor: Colors.orange,
     padding: 10,
     textAlign: 'center',

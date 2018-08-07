@@ -12,7 +12,8 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   ScrollView,
-  StatusBar
+  StatusBar,
+  Platform
 } from 'react-native';
 import { Font } from 'expo';
 import { Input, Button } from 'react-native-elements';
@@ -47,7 +48,6 @@ const TabSelector = ({ selected }) => {
 export default class AccountPage extends Component {
   constructor(props) {
     super(props);
-    this.layoutAnimationActive = false;
     this.state = {
       email: '',
       password: '',
@@ -73,12 +73,7 @@ export default class AccountPage extends Component {
   };
 
   layoutAnimation() {
-    //if (!this.layoutAnimationActive) {
-    this.layoutAnimationActive = true;
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut, () => {
-      this.layoutAnimationActive = false;
-    });
-    //}
+    LayoutAnimation.easeInEaseOut();
   }
 
   selectCategory(selectedCategory) {
@@ -142,7 +137,7 @@ export default class AccountPage extends Component {
         })
         .catch(error => {
           //setTimeout(() => {
-          this.layoutAnimation();
+          //this.layoutAnimation();
           this.setState({
             //email: '',
             password: '',
@@ -399,15 +394,16 @@ export default class AccountPage extends Component {
               //contentContainerStyle={styles.loginContainer}
               behavior="position"
             > */}
-              <View style={styles.formContainer}>
-                {this.state.errorMessage ? (
-                  <View style={{ alignSelf: 'flex-start', marginLeft: 25 }}>
-                    <Text style={{ color: '#FF2D00', fontSize: 12 }}>
-                      {this.state.errorMessage}
-                    </Text>
-                  </View>
-                ) : null}
-                {isSignUpPage ? (
+              {isSignUpPage ? (
+                <View style={styles.formContainer}>
+                  {this.state.errorMessage ? (
+                    <View style={{ alignSelf: 'flex-start', marginLeft: 25 }}>
+                      <Text style={{ color: '#FF2D00', fontSize: 12 }}>
+                        {this.state.errorMessage}
+                      </Text>
+                    </View>
+                  ) : null}
+
                   <Input
                     leftIcon={
                       <FIcon
@@ -435,74 +431,77 @@ export default class AccountPage extends Component {
                       //this.renew();
                     }}
                   />
-                ) : null}
-                <Input
-                  leftIcon={
-                    <FAIcon
-                      name="envelope-o"
-                      color="rgba(0, 0, 0, 0.38)"
-                      size={25}
-                      style={{ backgroundColor: 'transparent' }}
-                    />
-                  }
-                  value={this.state.email}
-                  keyboardAppearance="light"
-                  autoFocus={false}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  keyboardType="email-address"
-                  returnKeyType="next"
-                  //containerStyle={{ marginLeft: 10 }}
-                  placeholder={'電子郵件'}
-                  containerStyle={[
-                    isSignUpPage ? { marginTop: 16 } : null,
-                    { borderBottomColor: 'rgba(0, 0, 0, 0.38)' }
-                  ]}
-                  ref={input => (this.emailInput = input)}
-                  onSubmitEditing={() => this.passwordInput.focus()}
-                  onChangeText={email => {
-                    this.setState({ email });
-                    this.renew();
-                  }}
-                  errorMessage={
-                    this.state.isEmailValid ? null : '請輸入有效電子郵件'
-                  }
-                />
-                <Input
-                  leftIcon={
-                    <SLIcon
-                      name="lock"
-                      color="rgba(0, 0, 0, 0.38)"
-                      size={25}
-                      style={{ backgroundColor: 'transparent' }}
-                    />
-                  }
-                  value={this.state.password}
-                  keyboardAppearance="light"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  secureTextEntry={true}
-                  returnKeyType={isSignUpPage ? 'next' : 'done'}
-                  blurOnSubmit={true}
-                  containerStyle={{
-                    marginTop: 16,
-                    borderBottomColor: 'rgba(0, 0, 0, 0.38)'
-                  }}
-                  inputStyle={{ marginLeft: 10 }}
-                  placeholder={'密碼'}
-                  ref={input => (this.passwordInput = input)}
-                  onSubmitEditing={() =>
-                    isSignUpPage ? this.confirmationInput.focus() : this.login()
-                  }
-                  onChangeText={password => {
-                    this.setState({ password });
-                    this.renew();
-                  }}
-                  errorMessage={
-                    this.state.isPasswordValid ? null : '密碼長度需至少為8字元'
-                  }
-                />
-                {isSignUpPage ? (
+                  <Input
+                    leftIcon={
+                      <FAIcon
+                        name="envelope-o"
+                        color="rgba(0, 0, 0, 0.38)"
+                        size={25}
+                        style={{ backgroundColor: 'transparent' }}
+                      />
+                    }
+                    value={this.state.email}
+                    keyboardAppearance="light"
+                    autoFocus={false}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    keyboardType="email-address"
+                    returnKeyType="next"
+                    //containerStyle={{ marginLeft: 10 }}
+                    placeholder={'電子郵件'}
+                    containerStyle={[
+                      isSignUpPage ? { marginTop: 16 } : null,
+                      { borderBottomColor: 'rgba(0, 0, 0, 0.38)' }
+                    ]}
+                    ref={input => (this.emailInput = input)}
+                    onSubmitEditing={() => this.passwordInput.focus()}
+                    onChangeText={email => {
+                      this.setState({ email });
+                      this.renew();
+                    }}
+                    errorMessage={
+                      this.state.isEmailValid ? null : '請輸入有效電子郵件'
+                    }
+                  />
+                  <Input
+                    leftIcon={
+                      <SLIcon
+                        name="lock"
+                        color="rgba(0, 0, 0, 0.38)"
+                        size={25}
+                        style={{ backgroundColor: 'transparent' }}
+                      />
+                    }
+                    value={this.state.password}
+                    keyboardAppearance="light"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    secureTextEntry={true}
+                    returnKeyType={isSignUpPage ? 'next' : 'done'}
+                    blurOnSubmit={true}
+                    containerStyle={{
+                      marginTop: 16,
+                      borderBottomColor: 'rgba(0, 0, 0, 0.38)'
+                    }}
+                    inputStyle={{ marginLeft: 10 }}
+                    placeholder={'密碼'}
+                    ref={input => (this.passwordInput = input)}
+                    onSubmitEditing={() =>
+                      isSignUpPage
+                        ? this.confirmationInput.focus()
+                        : this.login()
+                    }
+                    onChangeText={password => {
+                      this.setState({ password });
+                      this.renew();
+                    }}
+                    errorMessage={
+                      this.state.isPasswordValid
+                        ? null
+                        : '密碼長度需至少為8字元'
+                    }
+                  />
+
                   <Input
                     leftIcon={
                       <SLIcon
@@ -536,10 +535,103 @@ export default class AccountPage extends Component {
                       this.state.isConfirmationValid ? null : '兩密碼不相同'
                     }
                   />
-                ) : null}
-                {/* <View style={{ flexDirection: 'row' }}> */}
+                  <Button
+                    buttonStyle={styles.loginButton}
+                    containerStyle={{
+                      marginTop: 25,
+                      flex: 0,
+                      alignItems: 'center'
+                    }}
+                    activeOpacity={0.8}
+                    title={isLoginPage ? '登入' : '註冊'}
+                    onPress={isLoginPage ? this.login : this.signUp}
+                    titleStyle={styles.loginTextButton}
+                    loading={this.state.isLoading}
+                    disabled={this.state.isLoading}
+                  />
+                </View>
+              ) : null}
+              {/* <View style={{ flexDirection: 'row' }}> */}
 
-                {isLoginPage ? (
+              {isLoginPage ? (
+                <View style={styles.formContainer}>
+                  {this.state.errorMessage ? (
+                    <View style={{ alignSelf: 'flex-start', marginLeft: 25 }}>
+                      <Text style={{ color: '#FF2D00', fontSize: 12 }}>
+                        {this.state.errorMessage}
+                      </Text>
+                    </View>
+                  ) : null}
+                  <Input
+                    leftIcon={
+                      <FAIcon
+                        name="envelope-o"
+                        color="rgba(0, 0, 0, 0.38)"
+                        size={25}
+                        style={{ backgroundColor: 'transparent' }}
+                      />
+                    }
+                    value={this.state.email}
+                    keyboardAppearance="light"
+                    autoFocus={false}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    keyboardType="email-address"
+                    returnKeyType="next"
+                    //containerStyle={{ marginLeft: 10 }}
+                    placeholder={'電子郵件'}
+                    containerStyle={[
+                      isSignUpPage ? { marginTop: 16 } : null,
+                      { borderBottomColor: 'rgba(0, 0, 0, 0.38)' }
+                    ]}
+                    ref={input => (this.emailInput = input)}
+                    onSubmitEditing={() => this.passwordInput.focus()}
+                    onChangeText={email => {
+                      this.setState({ email });
+                      this.renew();
+                    }}
+                    errorMessage={
+                      this.state.isEmailValid ? null : '請輸入有效電子郵件'
+                    }
+                  />
+                  <Input
+                    leftIcon={
+                      <SLIcon
+                        name="lock"
+                        color="rgba(0, 0, 0, 0.38)"
+                        size={25}
+                        style={{ backgroundColor: 'transparent' }}
+                      />
+                    }
+                    value={this.state.password}
+                    keyboardAppearance="light"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    secureTextEntry={true}
+                    returnKeyType={isSignUpPage ? 'next' : 'done'}
+                    blurOnSubmit={true}
+                    containerStyle={{
+                      marginTop: 16,
+                      borderBottomColor: 'rgba(0, 0, 0, 0.38)'
+                    }}
+                    inputStyle={{ marginLeft: 10 }}
+                    placeholder={'密碼'}
+                    ref={input => (this.passwordInput = input)}
+                    onSubmitEditing={() =>
+                      isSignUpPage
+                        ? this.confirmationInput.focus()
+                        : this.login()
+                    }
+                    onChangeText={password => {
+                      this.setState({ password });
+                      this.renew();
+                    }}
+                    errorMessage={
+                      this.state.isPasswordValid
+                        ? null
+                        : '密碼長度需至少為8字元'
+                    }
+                  />
                   <IIcon
                     name="logo-facebook"
                     color="#3b5998"
@@ -548,22 +640,23 @@ export default class AccountPage extends Component {
                     style={styles.fbButton}
                     borderRadius={10}
                   />
-                ) : null}
-                <Button
-                  buttonStyle={styles.loginButton}
-                  containerStyle={{
-                    marginTop: 25,
-                    flex: 0,
-                    alignItems: 'center'
-                  }}
-                  activeOpacity={0.8}
-                  title={isLoginPage ? '登入' : '註冊'}
-                  onPress={isLoginPage ? this.login : this.signUp}
-                  titleStyle={styles.loginTextButton}
-                  loading={this.state.isLoading}
-                  disabled={this.state.isLoading}
-                />
-              </View>
+
+                  <Button
+                    buttonStyle={styles.loginButton}
+                    containerStyle={{
+                      marginTop: 25,
+                      flex: 0,
+                      alignItems: 'center'
+                    }}
+                    activeOpacity={0.8}
+                    title={isLoginPage ? '登入' : '註冊'}
+                    onPress={isLoginPage ? this.login : this.signUp}
+                    titleStyle={styles.loginTextButton}
+                    loading={this.state.isLoading}
+                    disabled={this.state.isLoading}
+                  />
+                </View>
+              ) : null}
             </View>
           </TouchableWithoutFeedback>
         </KeyboardAwareScrollView>

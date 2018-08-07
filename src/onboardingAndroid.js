@@ -176,7 +176,7 @@ export default class OnboardingPageAndroid extends Component {
             name="check-circle"
             size={30}
             onPress={() => {
-              navigate('AccountPage');
+              navigate('AccountPageAndroid');
             }}
           />
         </Animated.View>

@@ -5,7 +5,8 @@ import {
   View,
   Button,
   Vibration,
-  StyleSheet
+  StyleSheet,
+  Platform
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 
@@ -47,11 +48,15 @@ export default class ChoiceButton extends Component {
         >
           <Animatable.View
             ref="View"
-            style={{
-              padding: 16,
-              borderRadius: 28,
-              backgroundColor: this.showcorrect(this.props.onColor, '#C0C0C0')
-            }}
+            style={[
+              {
+                backgroundColor: this.showcorrect(this.props.onColor, '#C0C0C0')
+              },
+              Platform.OS === 'ios' ? { padding: 16 } : { padding: 12 },
+              Platform.OS === 'ios'
+                ? { borderRadius: 28 }
+                : { borderRadius: 20 }
+            ]}
           >
             <Text
               style={{

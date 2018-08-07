@@ -8,7 +8,9 @@ import {
   Dimensions,
   TouchableOpacity,
   NetInfo,
-  Alert
+  Alert,
+  StatusBar,
+  Platform
 } from 'react-native';
 import FIcon from 'react-native-vector-icons/Foundation';
 import Modal from 'react-native-modal';
@@ -137,6 +139,7 @@ export default class WelcomePage extends Component {
     const { navigate, getParam } = this.props.navigation;
     return (
       <View style={styles.container}>
+        <StatusBar hidden translucent />
         <ImageBackground
           source={require('../assets/bgImage.jpg')}
           style={styles.bgImage}
@@ -187,8 +190,15 @@ export default class WelcomePage extends Component {
             onBackdropPress={() => this.setState({ showModal: false })}
             onSwipe={() => this.setState({ showModal: false })}
             swipeDirection={'left'}
+            //scrollOffset={Platform.OS === 'ios' ? 0 : -24}
           >
-            <View style={styles.modal}>
+            <View
+              style={[
+                styles.modal,
+                Platform.OS === 'ios' ? { marginVertical: 25 } : null
+              ]}
+            >
+              <StatusBar hidden translucent />
               <View>
                 <Text style={styles.modalText}>
                   {texts[getParam('mode', 0)]}
@@ -266,8 +276,6 @@ const styles = StyleSheet.create({
   modal: {
     flex: 1,
     marginHorizontal: '37%',
-    //marginVertical: 25,
-    height: 300,
     backgroundColor: '#FFFFE0',
     borderRadius: 10,
     borderColor: '#FFE4B5',

@@ -148,11 +148,9 @@ export default class ModePage extends Component {
               minimumValue={5}
               maximumValue={20}
               step={1}
-              style={[styles.slider, { marginTop: 20 }]}
+              style={[styles.slider, { marginTop: 10 }]}
               minimumTrackTintColor={Colors.lightOrange}
               thumbTintColor={Colors.lightOrange}
-              //thumbTouchSize={{width: 20, height: 20}}
-              //thumbStyle={{ size: 5 }}
             />
           )}
         </View>

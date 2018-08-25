@@ -106,8 +106,10 @@ export default class QuestionPage extends Component {
     const { params } = navigation.state;
     var mark = false;
     return {
-      title: '題目：' + getParam('displaynum', 1) + '/' + getParam('qnums', 10),
-      headerTitleStyle: { marginLeft: 50 },
+      title: IOS
+        ? `題目：${getParam('displaynum', 1)}/${getParam('qnums', 10)}`
+        : null,
+      headerTitleStyle: { textAlign: 'center', alignSelf: 'center' },
       headerStyle: [
         {
           backgroundColor: Colors.orange
@@ -137,11 +139,12 @@ export default class QuestionPage extends Component {
                 color: 'black',
                 fontWeight: 'bold',
                 fontSize: 18,
-                ...ifIphoneX({ marginLeft: 15 }, null)
+                ...ifIphoneX({ marginLeft: 15 }, null),
+                marginRight: 10
               }}
             >
               {'   '}
-              離開{'    '}
+              離開
             </Text>
           </TouchableOpacity>
           {params.mark ? (
@@ -152,7 +155,7 @@ export default class QuestionPage extends Component {
               }}
               color={'#000'}
               size={24}
-              style={{ marginTop: 3 }}
+              style={IOS ? { marginTop: 3 } : null}
             />
           ) : (
             <MCIcon
@@ -162,8 +165,21 @@ export default class QuestionPage extends Component {
               }}
               color={'#000'}
               size={24}
-              style={{ marginTop: 3 }}
+              style={IOS ? { marginTop: 3 } : null}
             />
+          )}
+          {IOS ? null : (
+            <Text
+              style={{
+                color: 'black',
+                fontWeight: 'bold',
+                fontSize: 18,
+                marginLeft: 10
+                //...ifIphoneX({ marginLeft: 15 }, null)
+              }}
+            >
+              題目：{getParam('displaynum', 1)}/{getParam('qnums', 10)}
+            </Text>
           )}
         </View>
       ),
@@ -286,7 +302,7 @@ export default class QuestionPage extends Component {
   next() {
     const { params } = this.props.navigation.state;
     LayoutAnimation.easeInEaseOut();
-    if (this.mark && this.num > 0) {
+    if (this.mark) {
       this.marked.push({
         difficulty: this.difficulty,
         index: this.index,
@@ -465,25 +481,25 @@ export default class QuestionPage extends Component {
     this.setState({
       barColor: Colors.lightOrange
     });
-    setTimeout(() => {
-      this.interval = setInterval(() => {
-        progress -= 0.1 / (timeLimits[params.timerIndex][this.difficulty] * 60);
-        if (progress < 0.2) {
-          this.setState({
-            barColor: 'red'
-          });
-        }
-        if (progress < 0) {
-          progress = 0;
-          this.setState({
-            timeUp: true
-          });
-          this.doTimeUp();
-          clearInterval(this.interval);
-        }
-        this.setState({ countdown: progress });
-      }, 100);
-    }, 1000);
+    //setTimeout(() => {
+    this.interval = setInterval(() => {
+      progress -= 0.1 / (timeLimits[params.timerIndex][this.difficulty] * 60);
+      if (progress < 0.2) {
+        this.setState({
+          barColor: 'red'
+        });
+      }
+      if (progress < 0) {
+        progress = 0;
+        this.setState({
+          timeUp: true
+        });
+        this.doTimeUp();
+        clearInterval(this.interval);
+      }
+      this.setState({ countdown: progress });
+    }, 100);
+    //}, 500);
   }
   doTimeUp = () => {
     var lastCorrectCount = this.correctCount;

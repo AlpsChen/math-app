@@ -26,7 +26,7 @@ renderOptions = props => {
   if (data.A) {
     if (data.A.length + data.B.length + data.C.length + data.D.length < 20) {
       return (
-        <Text style={{ fontSize: 24, marginHorizontal: 20, marginTop: 20 }}>
+        <Text style={{ fontSize: 24, marginHorizontal: 20, marginTop: 10 }}>
           (A) {'  '}
           {data.A}
           {'    '} (B) {'  '}
@@ -40,7 +40,7 @@ renderOptions = props => {
     } else {
       return (
         <View>
-          <Text style={{ fontSize: 24, marginHorizontal: 20, marginTop: 20 }}>
+          <Text style={{ fontSize: 24, marginHorizontal: 20, marginTop: 10 }}>
             (A) {data.A}
           </Text>
           <Text style={{ fontSize: 24, marginHorizontal: 20 }}>
@@ -99,6 +99,7 @@ const Slide = props => {
           />
           <View style={styles.iconsContainer}>
             <Button
+            
               icon={<EIcon name="pencil" size={25} />}
               title={props.data.userAnswer}
               disabledStyle={styles.buttons}
@@ -139,6 +140,10 @@ const Slide = props => {
               name="directions-run"
               size={30}
               onPress={() => {
+                let { marked } = props.navigation.state.params;
+                for (let i = marked.length; i > 0; i--) {
+                  marked.pop();
+                }
                 props.navigation.goBack();
               }}
             />
@@ -234,7 +239,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     marginHorizontal: 20,
     //fontFamily: 'serif',
-    marginVertical: 10
+    marginTop: 10
   },
   image: {
     width: '100%',

@@ -84,6 +84,7 @@ export default class OnboardingPageAndroid extends Component {
 
     return (
       <View style={{ flex: 1 }}>
+        <StatusBar hidden />
         <Swiper
           style={styles.wrapper}
           loop={false}

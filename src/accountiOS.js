@@ -22,6 +22,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import FAIcon from 'react-native-vector-icons/FontAwesome';
 import FIcon from 'react-native-vector-icons/Feather';
 import SLIcon from 'react-native-vector-icons/SimpleLineIcons';
+import { translate } from 'react-i18next';
 
 import IIcon from 'react-native-vector-icons/Ionicons';
 import * as firebase from 'firebase';
@@ -45,7 +46,7 @@ const TabSelector = ({ selected }) => {
   );
 };
 
-export default class AccountPage extends Component {
+export class AccountPageiOS extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -138,6 +139,7 @@ export default class AccountPage extends Component {
         .catch(error => {
           //setTimeout(() => {
           //this.layoutAnimation();
+          const { t } = this.props;
           this.setState({
             //email: '',
             password: '',
@@ -146,27 +148,27 @@ export default class AccountPage extends Component {
           switch (error.code) {
             case 'auth/wrong-password':
               this.setState({
-                errorMessage: '帳號或密碼錯誤'
+                errorMessage: t('errors.incorrect')
               });
               break;
             case 'auth/user-not-found':
               this.setState({
-                errorMessage: '帳號或密碼錯誤'
+                errorMessage: t('errors.incorrect')
               });
               break;
             case 'auth/user-disabled':
               this.setState({
-                errorMessage: '帳號不存在'
+                errorMessage: t('errors.notFound')
               });
               break;
             case 'auth/network-request-failed':
               this.setState({
-                errorMessage: '請檢查網路連線'
+                errorMessage: t('errors.network')
               });
               break;
             default:
               this.setState({
-                errorMessage: '登入失敗'
+                errorMessage: t('errors.loginFailed')
               });
               break;
           }
@@ -235,7 +237,11 @@ export default class AccountPage extends Component {
         }
       })
       .catch(error => {
-        this.setState({ isLoading: false, errorMessage: '登入失敗' });
+        const { t } = this.props;
+        this.setState({
+          isLoading: false,
+          errorMessage: t('errors.loginFailed')
+        });
       });
   }
 
@@ -251,6 +257,7 @@ export default class AccountPage extends Component {
 
   signUp() {
     const { email, password, passwordConfirmation } = this.state;
+    const { t } = this.props;
     this.setState({ isLoading: true });
     //email and password check passed
     if (
@@ -290,19 +297,19 @@ export default class AccountPage extends Component {
           switch (error.code) {
             case 'auth/email-already-in-use':
               this.setState({
-                errorMessage: '帳號已在別處被使用'
+                errorMessage: t('errors.emailInUse')
               });
               break;
             case 'auth/network-request-failed':
               this.setState({
-                errorMessage: '請檢查網路連線'
+                errorMessage: t('errors.network')
               });
               break;
             default:
               this.setState({
-                errorMessage: '註冊失敗'
+                errorMessage: t('errors.signUpFailed')
               });
-              console.log(error.Message);
+              //console.log(error.Message);
               break;
           }
           this.emailInput.shake();
@@ -331,6 +338,8 @@ export default class AccountPage extends Component {
     //console.log(this.state.errorMessage);
     var isLoginPage = this.state.selectedCategory === 0;
     var isSignUpPage = this.state.selectedCategory === 1;
+    const { t } = this.props;
+
     return (
       <View style={styles.container}>
         <StatusBar hidden />
@@ -363,7 +372,7 @@ export default class AccountPage extends Component {
                     styles.categoryText,
                     isLoginPage ? { opacity: 1 } : null
                   ]}
-                  title={'登入'}
+                  title={t('login')}
                 />
                 <Button
                   disabled={this.state.isLoading}
@@ -382,7 +391,7 @@ export default class AccountPage extends Component {
                     styles.categoryText,
                     isSignUpPage ? { opacity: 1 } : null
                   ]}
-                  title={'註冊'}
+                  title={t('signUp')}
                 />
               </View>
               <View style={styles.selectorContainer}>
@@ -422,7 +431,7 @@ export default class AccountPage extends Component {
                       borderBottomColor: 'rgba(0, 0, 0, 0.38)'
                     }}
                     inputStyle={{ marginLeft: 10 }}
-                    placeholder={'暱稱'}
+                    placeholder={t('name')}
                     //ref={input => (this.confirmationInput = input)}
                     onSubmitEditing={() => this.emailInput.focus()}
                     onChangeText={username => {
@@ -448,7 +457,7 @@ export default class AccountPage extends Component {
                   keyboardType="email-address"
                   returnKeyType="next"
                   //containerStyle={{ marginLeft: 10 }}
-                  placeholder={'電子郵件'}
+                  placeholder={t('email')}
                   containerStyle={[
                     isSignUpPage ? { marginTop: 16 } : null,
                     { borderBottomColor: 'rgba(0, 0, 0, 0.38)' }
@@ -460,7 +469,7 @@ export default class AccountPage extends Component {
                     this.renew();
                   }}
                   errorMessage={
-                    this.state.isEmailValid ? null : '請輸入有效電子郵件'
+                    this.state.isEmailValid ? null : t('errors.email')
                   }
                 />
                 <Input
@@ -484,7 +493,7 @@ export default class AccountPage extends Component {
                     borderBottomColor: 'rgba(0, 0, 0, 0.38)'
                   }}
                   inputStyle={{ marginLeft: 10 }}
-                  placeholder={'密碼'}
+                  placeholder={t('password')}
                   ref={input => (this.passwordInput = input)}
                   onSubmitEditing={() =>
                     isSignUpPage ? this.confirmationInput.focus() : this.login()
@@ -494,7 +503,7 @@ export default class AccountPage extends Component {
                     this.renew();
                   }}
                   errorMessage={
-                    this.state.isPasswordValid ? null : '密碼長度需至少為8字元'
+                    this.state.isPasswordValid ? null : t('errors.password')
                   }
                 />
                 {isSignUpPage ? (
@@ -520,7 +529,7 @@ export default class AccountPage extends Component {
                       borderBottomColor: 'rgba(0, 0, 0, 0.38)'
                     }}
                     inputStyle={{ marginLeft: 10 }}
-                    placeholder={'確認密碼'}
+                    placeholder={t('confirmPassword')}
                     ref={input => (this.confirmationInput = input)}
                     onSubmitEditing={this.signUp}
                     onChangeText={passwordConfirmation => {
@@ -528,7 +537,9 @@ export default class AccountPage extends Component {
                       this.renew();
                     }}
                     errorMessage={
-                      this.state.isConfirmationValid ? null : '兩密碼不相同'
+                      this.state.isConfirmationValid
+                        ? null
+                        : t('errors.confirmPassword')
                     }
                   />
                 ) : null}
@@ -552,7 +563,7 @@ export default class AccountPage extends Component {
                     alignItems: 'center'
                   }}
                   activeOpacity={0.8}
-                  title={isLoginPage ? '登入' : '註冊'}
+                  title={isLoginPage ? t('login') : t('signUp')}
                   onPress={isLoginPage ? this.login : this.signUp}
                   titleStyle={styles.loginTextButton}
                   loading={this.state.isLoading}
@@ -566,6 +577,10 @@ export default class AccountPage extends Component {
     );
   }
 }
+
+export default translate(['accountPage', 'common'], { wait: true })(
+  AccountPageiOS
+);
 
 const styles = StyleSheet.create({
   container: {

@@ -19,22 +19,9 @@ import EIcon from 'react-native-vector-icons/Entypo';
 import { Switch } from 'react-native-switch';
 import { ButtonGroup } from 'react-native-elements';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
+import { translate } from 'react-i18next';
 
 import { Colors } from './common/constants/colors';
-
-const modeDescriptions = [
-  '題目難度將適性調整。當你答對簡單題，題目將會越來越難，但若你答錯，題目又會變回簡單',
-  '題目難度將為隨機',
-  '題目難度全為簡單',
-  '題目難度全為中等',
-  '題目難度全為困難'
-];
-
-const timeLimitDescriptions = [
-  '簡單題時限5分鐘，中等題時限8分鐘，困難題時限10分鐘',
-  '簡單題時限2分鐘，中等題時限5分鐘，困難題時限8分鐘',
-  '簡單題時限1分鐘，中等題時限2分鐘，困難題時限5分鐘'
-];
 
 const SettingsItem = props => {
   const { image, label, labelColor, selected, icon, ...attributes } = props;
@@ -55,7 +42,7 @@ const SettingsItem = props => {
   );
 };
 
-export default class ModePage extends Component {
+export class ModePage extends Component {
   constructor(props) {
     super(props);
     const { params } = this.props.navigation.state;
@@ -65,7 +52,8 @@ export default class ModePage extends Component {
       volume: params.initialVolume,
       timer: params.initialTimer,
       selectedTimerIndex: params.initialTimerIndex,
-      selectedType: 'selectMode'
+      selectedType: 'selectMode',
+      language: this.props.i18n.language
     };
     this.setSelectedType = this.setSelectedType.bind(this);
   }
@@ -82,6 +70,7 @@ export default class ModePage extends Component {
 
   renderContent = now => {
     const { params } = this.props.navigation.state;
+    const { t, i18n } = this.props;
     if (now == 'selectMode') {
       return (
         <View
@@ -102,15 +91,15 @@ export default class ModePage extends Component {
               this.setState({ mode: itemValue })
             }
           >
-            <Picker.Item label="適性模式" value={0} />
-            <Picker.Item label="隨機模式" value={1} />
-            <Picker.Item label="簡單模式" value={2} />
-            <Picker.Item label="中等模式" value={3} />
-            <Picker.Item label="困難模式" value={4} />
+            <Picker.Item label={t('common:modes.0')} value={0} />
+            <Picker.Item label={t('common:modes.1')} value={1} />
+            <Picker.Item label={t('common:modes.2')} value={2} />
+            <Picker.Item label={t('common:modes.3')} value={3} />
+            <Picker.Item label={t('common:modes.4')} value={4} />
           </Picker>
           <View style={styles.description}>
             <Text style={{ fontSize: 20, fontWeight: 'bold' }}>
-              {modeDescriptions[this.state.mode]}
+              {t(`modeDescriptions.${this.state.mode}`)}
             </Text>
           </View>
         </View>
@@ -126,7 +115,7 @@ export default class ModePage extends Component {
           }}
         >
           <Text style={{ fontSize: 20, fontWeight: '900' }}>
-            題數：{this.state.qnums}
+            {t('total') + this.state.qnums}
           </Text>
           {Platform.OS === 'ios' ? (
             <SlideriOS
@@ -167,11 +156,11 @@ export default class ModePage extends Component {
         >
           {this.state.volume ? (
             <Text style={{ fontSize: 20, fontWeight: 'bold' }}>
-              開啟音效，獲得更佳體驗
+              {t('sound.on')}
             </Text>
           ) : (
             <Text style={{ fontSize: 20, fontWeight: 'bold' }}>
-              關閉音效，思考不受影響
+              {t('sound.off')}
             </Text>
           )}
           <View style={{ marginTop: 20 }}>
@@ -184,7 +173,10 @@ export default class ModePage extends Component {
         </View>
       );
     } else if (now == 'selectTimer') {
-      const buttons = ['入門', '正常', '挑戰'];
+      const buttons =
+        i18n.language === 'zh'
+          ? ['入門', '正常', '挑戰']
+          : ['Beginner', 'Intermediate', 'Advanced'];
       return (
         <View
           style={{
@@ -248,11 +240,37 @@ export default class ModePage extends Component {
                 <Text
                   style={{ fontSize: 20, fontWeight: 'bold', marginTop: 20 }}
                 >
-                  {timeLimitDescriptions[this.state.selectedTimerIndex]}
+                  {t(`limitDescriptions.${this.state.selectedTimerIndex}`)}
                 </Text>
               </View>
             ) : null}
           </View>
+        </View>
+      );
+    } else if (now == 'selectLanguage') {
+      return (
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}
+        >
+          <Picker
+            selectedValue={this.state.language}
+            style={styles.picker2}
+            itemStyle={{
+              color: Colors.lightOrange,
+              fontWeight: 'bold'
+            }}
+            onValueChange={(itemValue, itemIndex) => {
+              i18n.changeLanguage(itemValue);
+              this.setState({ language: itemValue });
+            }}
+          >
+            <Picker.Item label={'繁體中文'} value={'zh'} />
+            <Picker.Item label={'English'} value={'en'} />
+          </Picker>
         </View>
       );
     }
@@ -264,8 +282,6 @@ export default class ModePage extends Component {
       <View style={styles.bg}>
         <View style={styles.settingsTypesContainer}>
           <SettingsItem
-            //label="COOL"
-            //labelColor="#ECC841"
             icon={
               <SLIcon
                 name={'map'}
@@ -276,8 +292,6 @@ export default class ModePage extends Component {
             selected={selectedType === 'selectMode'}
           />
           <SettingsItem
-            //label="STUDENT"
-            //labelColor="#2CA75E"
             icon={
               <MCIcon
                 name="numeric-0-box-multiple-outline"
@@ -288,8 +302,6 @@ export default class ModePage extends Component {
             selected={selectedType === 'selectQnums'}
           />
           <SettingsItem
-            //label="HARRY POTTER"
-            //labelColor="#36717F"
             icon={
               <FIcon
                 name="volume-2"
@@ -300,8 +312,6 @@ export default class ModePage extends Component {
             selected={selectedType === 'selectVolume'}
           />
           <SettingsItem
-            //label="STUDENT"
-            //labelColor="#2CA75E"
             icon={
               <MCIcon
                 name="timer"
@@ -312,8 +322,6 @@ export default class ModePage extends Component {
             selected={selectedType === 'selectTimer'}
           />
           <SettingsItem
-            //label="HARRY POTTER"
-            //labelColor="#36717F"
             icon={
               <EIcon
                 name="pencil"
@@ -322,6 +330,17 @@ export default class ModePage extends Component {
             }
             onPress={() => this.setSelectedType('selectColors')}
             selected={selectedType === 'selectColors'}
+          />
+          <SettingsItem
+            icon={
+              <MCIcon
+                name={'format-color-text'}
+                size={selectedType === 'selectLanguage' ? 70 : 50}
+                style={{ marginTop: 10 }}
+              />
+            }
+            onPress={() => this.setSelectedType('selectLanguage')}
+            selected={selectedType === 'selectLanguage'}
           />
         </View>
         <View style={{ flex: 1.5 }}>{this.renderContent(selectedType)}</View>
@@ -365,6 +384,7 @@ export default class ModePage extends Component {
     );
   }
 }
+export default translate(['settingsPage', 'common'], { wait: true })(ModePage);
 
 const styles = StyleSheet.create({
   bg: {
@@ -380,8 +400,13 @@ const styles = StyleSheet.create({
     paddingRight: 20,
     borderRightWidth: 3
   },
+  picker2: {
+    width: 150,
+    borderWidth: 2,
+    borderRadius: 20
+  },
   description: {
-    width: 300,
+    width: 400,
     alignItems: 'center',
     marginLeft: 20
   },

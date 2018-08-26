@@ -14,13 +14,14 @@ import {
 import * as Progress from 'react-native-progress';
 import { Asset } from 'expo';
 import * as firebase from 'firebase';
+import { translate } from 'react-i18next';
 
 const bgcolor = '#F5FCFF';
 const bgImage = require('../assets/scoringImage.jpg');
 var arr = [];
 const IOS = Platform.OS === 'ios';
 
-export default class ScoringPage extends Component {
+export class ScoringPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -73,10 +74,11 @@ export default class ScoringPage extends Component {
   addMarked() {
     let { marked } = this.props.navigation.state.params;
     let { navigate } = this.props.navigation;
+    let { t } = this.props;
     if (marked.length == 0) {
-      Alert.alert('你沒有標記難題哦', '', [
-        { text: '下次會記得', onPress: () => {}, style: 'cancel' },
-        { text: '了解', onPress: () => {} }
+      Alert.alert(t('alert.title'), '', [
+        { text: t('alert.ok2'), onPress: () => {}, style: 'cancel' },
+        { text: t('alert.ok'), onPress: () => {} }
       ]);
     } else {
       for (let i = 0; i < marked.length; i++) {
@@ -131,6 +133,7 @@ export default class ScoringPage extends Component {
   render() {
     let { navigate } = this.props.navigation;
     let { params } = this.props.navigation.state;
+    let { t } = this.props;
     return (
       <View style={styles.bg}>
         {this.state.finished ? this.animateButtons() : null}
@@ -169,7 +172,7 @@ export default class ScoringPage extends Component {
                 ]}
               >
                 <Text style={[styles.buttonText, { color: '#000000' }]}>
-                  查看難題
+                  {t('buttons.viewMarked')}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -182,7 +185,7 @@ export default class ScoringPage extends Component {
                 ]}
               >
                 <Text style={[styles.buttonText, { color: '#000000' }]}>
-                  回到首頁
+                  {t('buttons.goBack')}
                 </Text>
               </TouchableOpacity>
             </Animated.View>
@@ -230,6 +233,10 @@ export default class ScoringPage extends Component {
     );
   }
 }
+export default translate(['scoringPage', 'common'], { wait: true })(
+  ScoringPage
+);
+
 const styles = StyleSheet.create({
   bg: {
     flex: 1,

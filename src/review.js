@@ -20,6 +20,7 @@ import FAIcon from 'react-native-vector-icons/FontAwesome';
 import MIcon from 'react-native-vector-icons/MaterialIcons';
 import { Button } from 'react-native-elements';
 import { Colors } from './common/constants/colors';
+import { translate } from 'react-i18next';
 
 renderOptions = props => {
   var data = JSON.parse(props.JSON);
@@ -59,6 +60,7 @@ renderOptions = props => {
 };
 
 const Slide = props => {
+  const { t } = props;
   return (
     <View style={styles.slide}>
       <Drawer
@@ -85,21 +87,22 @@ const Slide = props => {
         <View style={styles.bottomBarContainer}>
           <Button
             icon={<EIcon name="pencil" size={25} />}
-            title={props.displayUserAnswer ? '隱藏答案' : '你的答案'}
+            title={props.displayUserAnswer ? t('user.hide') : t('user.show')}
             buttonStyle={[styles.buttons, { marginLeft: 20 }]}
             titleStyle={{ color: Colors.black }}
             onPress={props.onPressUA}
           />
           <Button
             icon={<FAIcon name="question" size={30} />}
-            title={props.displayCorrectAnswer ? '隱藏答案' : '正確答案'}
+            title={
+              props.displayCorrectAnswer ? t('correct.hide') : t('correct.show')
+            }
             buttonStyle={styles.buttons}
             titleStyle={{ color: Colors.black }}
             onPress={props.onPressCA}
           />
           <View style={styles.iconsContainer}>
             <Button
-            
               icon={<EIcon name="pencil" size={25} />}
               title={props.data.userAnswer}
               disabledStyle={styles.buttons}
@@ -154,7 +157,7 @@ const Slide = props => {
   );
 };
 
-export default class ReviewPage extends Component {
+export class ReviewPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -221,6 +224,7 @@ export default class ReviewPage extends Component {
               onPressUA={this.onPressButton.bind(this, true)}
               onPressCA={this.onPressButton.bind(this, false)}
               navigation={this.props.navigation}
+              t={this.props.t}
             />
           ))}
         </Swiper>
@@ -228,6 +232,7 @@ export default class ReviewPage extends Component {
     );
   }
 }
+export default translate(['reviewPage', 'common'], { wait: true })(ReviewPage);
 
 const styles = StyleSheet.create({
   slide: {

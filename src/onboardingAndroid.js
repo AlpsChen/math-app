@@ -17,6 +17,7 @@ import SLIcon from 'react-native-vector-icons/SimpleLineIcons';
 import MCIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import FIcon from 'react-native-vector-icons/Feather';
 import Swiper from 'react-native-swiper';
+import { translate } from 'react-i18next';
 
 const backgroundColors = [
   '#9DD6EB',
@@ -30,7 +31,7 @@ const backgroundColors = [
 ];
 const { width, height } = Dimensions.get('screen');
 
-export default class OnboardingPageAndroid extends Component {
+export class OnboardingPageAndroid extends Component {
   static navigationOptions = {
     header: null,
     gesturesEnabled: false
@@ -45,6 +46,12 @@ export default class OnboardingPageAndroid extends Component {
       backgroundColorAnim: new Animated.Value(0)
     };
   }
+
+  // componentDidMount() {
+  //   Expo.Font.loadAsync({
+  //     blackjack: require('../assets/fonts/blackjack.otf')
+  //   });
+  // }
 
   componentDidUpdate() {
     Animated.timing(this.state.backgroundColorAnim, {
@@ -71,6 +78,7 @@ export default class OnboardingPageAndroid extends Component {
 
   render() {
     const { navigate } = this.props.navigation;
+    const { t } = this.props;
 
     const currentBackgroundColor = backgroundColors[this.state.currentPage];
     let backgroundColor = currentBackgroundColor;
@@ -98,10 +106,8 @@ export default class OnboardingPageAndroid extends Component {
         >
           <Animated.View style={[styles.slides, { backgroundColor }]}>
             <IIcon name={'md-bulb'} size={135} style={{ marginTop: -50 }} />
-            <Text style={styles.titleText}>歡迎</Text>
-            <Text style={styles.subtitleText}>
-              這裡有五花八門的數學題供這裡有五花八門的數學題供你小試身手
-            </Text>
+            <Text style={styles.titleText}>{t('welcome.title')}</Text>
+            <Text style={styles.subtitleText}>{t('welcome.description')}</Text>
           </Animated.View>
 
           <Animated.View style={[styles.slides, { backgroundColor }]}>
@@ -110,10 +116,8 @@ export default class OnboardingPageAndroid extends Component {
               size={120}
               style={{ marginTop: -30, marginBottom: 10 }}
             />
-            <Text style={styles.titleText}>五種模式</Text>
-            <Text style={styles.subtitleText}>
-              適性、隨機、簡單、中等、困難
-            </Text>
+            <Text style={styles.titleText}>{t('mode.title')}</Text>
+            <Text style={styles.subtitleText}>{t('mode.description')}</Text>
           </Animated.View>
 
           <Animated.View style={[styles.slides, { backgroundColor }]}>
@@ -122,14 +126,14 @@ export default class OnboardingPageAndroid extends Component {
               size={120}
               style={{ marginTop: -30, marginBottom: 10, marginLeft: 20 }}
             />
-            <Text style={styles.titleText}>計算紙</Text>
-            <Text style={styles.subtitleText}>隨時隨地都能算</Text>
+            <Text style={styles.titleText}>{t('paper.title')}</Text>
+            <Text style={styles.subtitleText}>{t('paper.description')}</Text>
           </Animated.View>
 
           <Animated.View style={[styles.slides, { backgroundColor }]}>
             <MCIcon name={'timer-sand'} size={130} style={{ marginTop: -50 }} />
-            <Text style={styles.titleText}>時限</Text>
-            <Text style={styles.subtitleText}>讓答題更具挑戰性</Text>
+            <Text style={styles.titleText}>{t('limit.title')}</Text>
+            <Text style={styles.subtitleText}>{t('limit.description')}</Text>
           </Animated.View>
 
           <Animated.View style={[styles.slides, { backgroundColor }]}>
@@ -138,14 +142,14 @@ export default class OnboardingPageAndroid extends Component {
               size={130}
               style={{ marginTop: -50 }}
             />
-            <Text style={styles.titleText}>複習</Text>
-            <Text style={styles.subtitleText}>標記難題，加強印象</Text>
+            <Text style={styles.titleText}>{t('review.title')}</Text>
+            <Text style={styles.subtitleText}>{t('review.description')}</Text>
           </Animated.View>
 
           <Animated.View style={[styles.slides, { backgroundColor }]}>
             <SLIcon name={'earphones'} size={130} style={{ marginTop: -50 }} />
-            <Text style={styles.titleText}>音效</Text>
-            <Text style={styles.subtitleText}>開啟聲音，讓答題更有趣</Text>
+            <Text style={styles.titleText}>{t('sound.title')}</Text>
+            <Text style={styles.subtitleText}>{t('sound.description')}</Text>
           </Animated.View>
 
           <Animated.View style={[styles.slides, { backgroundColor }]}>
@@ -155,8 +159,8 @@ export default class OnboardingPageAndroid extends Component {
               style={{ marginTop: -50, marginBottom: 10 }}
             />
 
-            <Text style={styles.titleText}>隨時更新</Text>
-            <Text style={styles.subtitleText}>最新題型，一應俱全</Text>
+            <Text style={styles.titleText}>{t('update.title')}</Text>
+            <Text style={styles.subtitleText}>{t('update.description')}</Text>
           </Animated.View>
 
           <Animated.View style={[styles.slides, { backgroundColor }]}>
@@ -165,8 +169,8 @@ export default class OnboardingPageAndroid extends Component {
               size={130}
               style={{ marginTop: -50 }}
             />
-            <Text style={styles.titleText}>數學起飛</Text>
-            <Text style={styles.subtitleText}>會考成為囊中物！</Text>
+            <Text style={styles.titleText}>{t('success.title')}</Text>
+            <Text style={styles.subtitleText}>{t('success.description')}</Text>
           </Animated.View>
         </Swiper>
 
@@ -186,6 +190,10 @@ export default class OnboardingPageAndroid extends Component {
   }
 }
 
+export default translate(['onboardingPage', 'common'], { wait: true })(
+  OnboardingPageAndroid
+);
+
 const styles = StyleSheet.create({
   wrapper: {},
   slides: {
@@ -204,7 +212,7 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 16,
     //fontWeight: 'bold',
-    fontFamily: 'serif',
+    fontFamily: 'blackjack',
     marginTop: 10
   },
   buttonText: {

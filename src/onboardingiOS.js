@@ -7,6 +7,7 @@ import IIcon from 'react-native-vector-icons/Ionicons';
 import SLIcon from 'react-native-vector-icons/SimpleLineIcons';
 import MCIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
+import { translate } from 'react-i18next';
 
 const backgroundColor = isLight => (isLight ? 'blue' : 'lightblue');
 const color = isLight => backgroundColor(!isLight);
@@ -33,17 +34,16 @@ const Next = ({ isLight, ...props }) => (
   </View>
 );
 
-UIManager.setLayoutAnimationEnabledExperimental &&
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-
-export default class OnboardingPageiOS extends Component {
+export class OnboardingPageiOS extends Component {
   static navigationOptions = {
     header: null,
     gesturesEnabled: false
   };
 
   render() {
-    const { navigate } = this.props.navigation;
+    const { t, navigation } = this.props;
+    const { navigate } = navigation;
+
     return (
       <View style={{ flex: 1 }}>
         <StatusBar hidden />
@@ -66,8 +66,8 @@ export default class OnboardingPageiOS extends Component {
                   style={ifIphoneX({ marginBottom: -15 }, null)}
                 />
               ),
-              title: '歡迎',
-              subtitle: '這裡有五花八門的數學題供你小試身手'
+              title: t('welcome.title'),
+              subtitle: t('welcome.description')
             },
             {
               backgroundColor: '#FFCC99',
@@ -78,8 +78,8 @@ export default class OnboardingPageiOS extends Component {
                   style={ifIphoneX({ marginBottom: -5 }, null)}
                 />
               ),
-              title: '五種模式',
-              subtitle: '適性、隨機、簡單、中等、困難'
+              title: t('mode.title'),
+              subtitle: t('mode.description')
             },
             {
               backgroundColor: '#CCCCFF',
@@ -93,8 +93,8 @@ export default class OnboardingPageiOS extends Component {
                   ]}
                 />
               ),
-              title: '計算紙',
-              subtitle: '隨時隨地都能算'
+              title: t('paper.title'),
+              subtitle: t('paper.description')
             },
             {
               backgroundColor: '#FFCCCC',
@@ -105,8 +105,8 @@ export default class OnboardingPageiOS extends Component {
                   style={ifIphoneX({ marginBottom: -15 }, null)}
                 />
               ),
-              title: '時限',
-              subtitle: '讓答題更具挑戰性'
+              title: t('limit.title'),
+              subtitle: t('limit.description')
             },
             {
               backgroundColor: '#E5CCFF',
@@ -117,8 +117,8 @@ export default class OnboardingPageiOS extends Component {
                   style={ifIphoneX({ marginBottom: -15 }, null)}
                 />
               ),
-              title: '複習',
-              subtitle: '標記難題，加強印象'
+              title: t('review.title'),
+              subtitle: t('review.description')
             },
             {
               backgroundColor: '#99CCFF',
@@ -129,8 +129,8 @@ export default class OnboardingPageiOS extends Component {
                   style={ifIphoneX({ marginBottom: -10 }, null)}
                 />
               ),
-              title: '音效',
-              subtitle: '開啟聲音，讓答題更有趣'
+              title: t('sound.title'),
+              subtitle: t('sound.description')
             },
             {
               backgroundColor: '#FF9999',
@@ -141,8 +141,8 @@ export default class OnboardingPageiOS extends Component {
                   style={ifIphoneX({ marginBottom: -5 }, null)}
                 />
               ),
-              title: '隨時更新',
-              subtitle: '最新題型，一應俱全'
+              title: t('update.title'),
+              subtitle: t('update.description')
             },
             {
               backgroundColor: '#FFCCE5',
@@ -153,8 +153,8 @@ export default class OnboardingPageiOS extends Component {
                   style={ifIphoneX({ marginBottom: -20 }, null)}
                 />
               ),
-              title: '數學起飛',
-              subtitle: '會考成為囊中物！'
+              title: t('success.title'),
+              subtitle: t('success.description')
             }
           ]}
         />
@@ -162,3 +162,7 @@ export default class OnboardingPageiOS extends Component {
     );
   }
 }
+
+export default translate(['onboardingPage', 'common'], { wait: true })(
+  OnboardingPageiOS
+);

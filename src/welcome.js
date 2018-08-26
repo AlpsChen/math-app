@@ -10,7 +10,10 @@ import {
   NetInfo,
   Alert,
   StatusBar,
-  Platform
+  Platform,
+  ActivityIndicator,
+  LayoutAnimation,
+  UIManager
 } from 'react-native';
 import FIcon from 'react-native-vector-icons/Foundation';
 import Modal from 'react-native-modal';
@@ -20,10 +23,15 @@ import IIcon from 'react-native-vector-icons/Ionicons';
 import SLIcon from 'react-native-vector-icons/SimpleLineIcons';
 import MCIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import EIcon from 'react-native-vector-icons/Entypo';
+import { translate } from 'react-i18next';
+import * as Progress from 'react-native-progress';
 const { width, height } = Dimensions.get('window');
-const texts = ['適性模式', '隨機模式', '簡單模式', '中等模式', '困難模式'];
 
 import { Colors } from './common/constants/colors';
+
+// Enable LayoutAnimation on Android
+UIManager.setLayoutAnimationEnabledExperimental &&
+  UIManager.setLayoutAnimationEnabledExperimental(true);
 
 const UserTypeItem = props => {
   const { image, label, labelColor, selected, ...attributes } = props;
@@ -50,7 +58,7 @@ const UserTypeItem = props => {
   );
 };
 
-export default class WelcomePage extends Component {
+export class WelcomePage extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -58,7 +66,8 @@ export default class WelcomePage extends Component {
       user: null,
       errorMessage: '',
       username: '',
-      status: true
+      status: true,
+      UsernameDownloaded: false
     };
   }
   static navigationOptions = {
@@ -71,7 +80,9 @@ export default class WelcomePage extends Component {
       .auth()
       .signOut()
       .then(() => {
-        this.props.navigation.navigate('AccountPage');
+        this.props.navigation.navigate(
+          Platform.OS === 'ios' ? 'AccountPageiOS' : 'AccountPageAndroid'
+        );
       })
       .catch(error => this.setState({ errorMessage: error.message }));
     //LoginManager.logOut();
@@ -86,8 +97,10 @@ export default class WelcomePage extends Component {
       .once('value')
       .then(snap => {
         this.setState({
-          username: snap.val().username
+          username: snap.val().username,
+          UsernameDownloaded: true
         });
+        LayoutAnimation.easeInEaseOut();
       });
   }
 
@@ -112,9 +125,10 @@ export default class WelcomePage extends Component {
 
   detectConnection() {
     const { navigate, getParam } = this.props.navigation;
+    const { t } = this.props;
     NetInfo.getConnectionInfo().then(connectionInfo => {
       if (connectionInfo.type == 'none' || connectionInfo.type == 'unknown') {
-        Alert.alert('請檢查網路連線');
+        Alert.alert(t('network'));
       } else {
         this.setState({ showModal: false });
         navigate('Second', {
@@ -137,6 +151,8 @@ export default class WelcomePage extends Component {
 
   render() {
     const { navigate, getParam } = this.props.navigation;
+    const { t, i18n } = this.props;
+    // console.log(i18n.languages[2]);
     return (
       <View style={styles.container}>
         <StatusBar hidden translucent />
@@ -150,7 +166,15 @@ export default class WelcomePage extends Component {
           ) : null}
           <View style={styles.buttonsContainer}>
             <View style={styles.button}>
-              <Text style={styles.buttonText}>{this.state.username},歡迎</Text>
+              {this.state.UsernameDownloaded ? (
+                <Text style={styles.buttonText}>
+                  {i18n.language.startsWith('zh')
+                    ? this.state.username + t('welcome')
+                    : t('welcome') + ' ' + this.state.username}
+                </Text>
+              ) : (
+                <ActivityIndicator />
+              )}
             </View>
             <TouchableOpacity
               onPress={() => {
@@ -158,7 +182,7 @@ export default class WelcomePage extends Component {
               }}
               style={styles.button}
             >
-              <Text style={styles.buttonText}>開始練習</Text>
+              <Text style={styles.buttonText}>{t('start')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => {
@@ -172,7 +196,7 @@ export default class WelcomePage extends Component {
               }}
               style={styles.button}
             >
-              <Text style={styles.buttonText}>設定</Text>
+              <Text style={styles.buttonText}>{t('setting')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => {
@@ -180,7 +204,7 @@ export default class WelcomePage extends Component {
               }}
               style={styles.button}
             >
-              <Text style={styles.buttonText}>登出</Text>
+              <Text style={styles.buttonText}>{t('logOut')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -201,18 +225,22 @@ export default class WelcomePage extends Component {
               <StatusBar hidden translucent />
               <View>
                 <Text style={styles.modalText}>
-                  {texts[getParam('mode', 0)]}
+                  {t(`common:modes.${getParam('mode', 0)}`)}
                 </Text>
-                <Text style={styles.modalText}>{getParam('qnums', 10)}題</Text>
+                <Text style={styles.modalText}>
+                  {getParam('qnums', 10) + t('questions')}
+                </Text>
                 {getParam('timer', true) ? (
-                  <Text style={styles.modalText}>時限模式</Text>
+                  <Text style={styles.modalText}>{t('timeLimitMode')}</Text>
                 ) : null}
               </View>
               <TouchableOpacity
                 style={styles.modalButton}
                 onPress={this.detectConnection.bind(this)}
               >
-                <Text style={{ fontSize: 20, fontWeight: 'bold' }}>確定</Text>
+                <Text style={{ fontSize: 20, fontWeight: 'bold' }}>
+                  {t('confirm')}
+                </Text>
               </TouchableOpacity>
             </View>
           </Modal>
@@ -221,6 +249,9 @@ export default class WelcomePage extends Component {
     );
   }
 }
+export default translate(['welcomePage', 'common'], { wait: true })(
+  WelcomePage
+);
 
 const styles = StyleSheet.create({
   bgImage: {

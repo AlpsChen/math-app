@@ -13,7 +13,13 @@ import AccountPageAndroid from './src/accountAndroid';
 import OnboardingPageAndroid from './src/onboardingAndroid';
 import checkIfFirstLaunch from './src/components/checkIfFirstLaunch';
 import { Notifications } from 'expo';
+
 import * as firebase from 'firebase';
+import { translate } from 'react-i18next';
+import i18n from './src/common/i18n';
+
+// Route & Localization settings
+// ============================================
 
 const routeConfig = {
   First: { screen: WelcomePage },
@@ -26,17 +32,52 @@ const routeConfig = {
   OnboardingPageAndroid,
   OnboardingPageiOS
 };
+
+translate.setDefaults({
+  bindI18n: 'languageChanged',
+  bindStore: false
+});
+
 const FirstNavigation = createStackNavigator(routeConfig, {
   initialRouteName: 'First'
 });
+const WrappedFirst = ({ t }) => {
+  return <FirstNavigation screenProps={{ t }} />;
+};
+const First = translate('common', {
+  bindI18n: 'languageChanged',
+  bindStore: false
+})(WrappedFirst);
+
 const LoginNavigation = createStackNavigator(routeConfig, {
   initialRouteName:
     Platform.OS === 'ios' ? 'AccountPageiOS' : 'AccountPageAndroid'
 });
+const WrappedLogin = ({ t }) => {
+  return <LoginNavigation screenProps={{ t }} />;
+};
+const Login = translate('common', {
+  bindI18n: 'languageChanged',
+  bindStore: false
+})(WrappedLogin);
+
 const OnboardingNavigation = createStackNavigator(routeConfig, {
   initialRouteName:
     Platform.OS === 'ios' ? 'OnboardingPageiOS' : 'OnboardingPageAndroid'
 });
+const WrappedOnboarding = ({ t }) => {
+  return <OnboardingNavigation screenProps={{ t }} />;
+};
+const Onboarding = translate('common', {
+  bindI18n: 'languageChanged',
+  bindStore: false
+})(WrappedOnboarding);
+
+// ============================================
+
+// Notification settings
+// ============================================
+
 const localNotification = {
   title: '會考的數學會考',
   body: '每天練習可以增加手感ㄛ',
@@ -46,11 +87,12 @@ const schedulingOptions = {
   time: 1533038400,
   repeat: 'day'
 };
-
 Notifications.scheduleLocalNotificationAsync(
   localNotification,
   schedulingOptions
 );
+
+// ============================================
 
 export default class App extends Component {
   state = {
@@ -73,15 +115,15 @@ export default class App extends Component {
   render() {
     console.disableYellowBox = true;
     const { checkedAsyncStorage, isFirstLaunch, initialRoute } = this.state;
-    // if (!checkedAsyncStorage) {
-    //   return null;
-    // }
-    // if (isFirstLaunch) return <OnboardingNavigation />;
-    // else if (initialRoute === 'First') return <FirstNavigation />;
-    // else if (initialRoute === 'Login') return <LoginNavigation />;
-    // else return null;
+    if (!checkedAsyncStorage) {
+      return null;
+    }
+    if (isFirstLaunch) return <Onboarding />;
+    else if (initialRoute === 'First') return <First />;
+    else if (initialRoute === 'Login') return <Login />;
+    else return null;
 
-    return <OnboardingNavigation />;
+    // return <Login />;
   }
 }
 

@@ -29,6 +29,7 @@ import MathJax from 'react-native-mathjax';
 import ProgressBar from 'react-native-progress/Bar';
 import Modal from 'react-native-modal';
 import { Audio, PlaybackObject } from 'expo';
+import { translate } from 'react-i18next';
 
 import DrawerContent from './components/drawerContent';
 
@@ -55,7 +56,7 @@ var chosenEasy = [100],
 const { height, width } = Dimensions.get('screen');
 const IOS = Platform.OS === 'ios';
 
-export default class QuestionPage extends Component {
+export class QuestionPage extends Component {
   constructor(props) {
     super(props);
     this.num = 0; // the nth question
@@ -101,13 +102,17 @@ export default class QuestionPage extends Component {
   handleConnectionChange = isConnected => {
     this.setState({ isConnected });
   };
-  static navigationOptions = ({ navigation }) => {
+  static navigationOptions = ({ screenProps, navigation }) => {
     const { getParam } = navigation;
     const { params } = navigation.state;
+    const { t } = screenProps;
     var mark = false;
     return {
       title: IOS
-        ? `題目：${getParam('displaynum', 1)}/${getParam('qnums', 10)}`
+        ? t('questionPage:header.title', {
+            current: getParam('displaynum', 1),
+            total: getParam('qnums', 10)
+          })
         : null,
       headerTitleStyle: { textAlign: 'center', alignSelf: 'center' },
       headerStyle: [
@@ -121,17 +126,25 @@ export default class QuestionPage extends Component {
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <TouchableOpacity
             onPress={() => {
-              Alert.alert('你確定要離開嗎', '記錄將不會被儲存', [
-                {
-                  text: '確定',
-                  onPress: () => {
-                    clearInterval(this.interval);
+              Alert.alert(
+                t('questionPage:header.left.title'),
+                t('questionPage:header.left.message'),
+                [
+                  {
+                    text: t('questionPage:header.left.yes'),
+                    onPress: () => {
+                      clearInterval(this.interval);
 
-                    navigation.goBack();
+                      navigation.goBack();
+                    }
+                  },
+                  {
+                    text: t('questionPage:header.left.no'),
+                    onPress: () => {},
+                    style: 'cancel'
                   }
-                },
-                { text: '不要啊', onPress: () => {}, style: 'cancel' }
-              ]);
+                ]
+              );
             }}
           >
             <Text
@@ -144,7 +157,7 @@ export default class QuestionPage extends Component {
               }}
             >
               {'   '}
-              離開
+              {t('questionPage:header.left.leave')}
             </Text>
           </TouchableOpacity>
           {params.mark ? (
@@ -178,7 +191,10 @@ export default class QuestionPage extends Component {
                 //...ifIphoneX({ marginLeft: 15 }, null)
               }}
             >
-              題目：{getParam('displaynum', 1)}/{getParam('qnums', 10)}
+              {t('questionPage:header.title', {
+                current: getParam('displaynum', 1),
+                total: getParam('qnums', 10)
+              })}
             </Text>
           )}
         </View>
@@ -186,7 +202,7 @@ export default class QuestionPage extends Component {
       headerRight: (
         <View style={styles.topright}>
           <Text style={{ color: 'black', fontWeight: 'bold', fontSize: 18 }}>
-            難度：
+            {t('questionPage:header.right.difficulty')}
           </Text>
           {params.icons}
         </View>
@@ -511,6 +527,7 @@ export default class QuestionPage extends Component {
 
   render() {
     const { params } = this.props.navigation.state;
+    const { t } = this.props;
     return (
       <View style={styles.bg}>
         <StatusBar hidden translucent />
@@ -645,10 +662,10 @@ export default class QuestionPage extends Component {
               >
                 <View>
                   <Text style={[localStyles.modalText, { fontSize: 28 }]}>
-                    時間到
+                    {t('timeUp.title')}
                   </Text>
                   <Text style={[localStyles.modalText, { fontSize: 20 }]}>
-                    是否標記本題
+                    {t('timeUp.message')}
                   </Text>
                 </View>
                 <View
@@ -669,7 +686,9 @@ export default class QuestionPage extends Component {
                       this.next();
                     }}
                   >
-                    <Text style={{ fontSize: 20, fontWeight: 'bold' }}>否</Text>
+                    <Text style={{ fontSize: 20, fontWeight: 'bold' }}>
+                      {t('timeUp.no')}
+                    </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={localStyles.modalButton}
@@ -683,7 +702,9 @@ export default class QuestionPage extends Component {
                       this.next();
                     }}
                   >
-                    <Text style={{ fontSize: 20, fontWeight: 'bold' }}>是</Text>
+                    <Text style={{ fontSize: 20, fontWeight: 'bold' }}>
+                      {t('timeUp.yes')}
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -694,6 +715,9 @@ export default class QuestionPage extends Component {
     );
   }
 }
+export default translate(['questionPage', 'common'], { wait: true })(
+  QuestionPage
+);
 
 const localStyles = StyleSheet.create({
   modal: {

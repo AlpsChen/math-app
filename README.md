@@ -2,7 +2,7 @@
 
 According to official survey, Taiwanese students under 20 years old spent more than four hours a day on their mobile phones in 2017. It is indeed the world record. Therefore, I utilized **React Native** — a *state-of-the-art*, *cross-platform*, and *conditional rendering* programming language — to develop an unique **Mathematics Quiz App** for Taiwanese students to prepare for the high school entrance examination “on their phones”.
 
-![Mathmatics Applied To Huikao](https://imgur.com/DsN8AlK)
+![Mathematics Applied To Huikao](https://i.imgur.com/DsN8AlK.png)
 
 ## Getting Started
 

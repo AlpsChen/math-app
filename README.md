@@ -103,7 +103,7 @@ The app gains several outstanding features outplaying ordinary quiz apps.
 
 ## Special Thanks To
 
-* [Zack老師](https://www.npmjs.com/) - Who taught me the use of Github and so many great stuffs!
+* Zack老師 - Who taught me the use of Github and so many great stuffs!
 * [Excellent YouTube Tutorial Channel](https://youtu.be/1tgWuND9Vfg) - Who taught React Native from easy to advanced so clearly and effectively!
 * _You_ - Who are willing to view my works and give me the motivation to improve.
 

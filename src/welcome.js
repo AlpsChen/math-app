@@ -114,7 +114,7 @@ export class WelcomePage extends Component {
     );
   }
 
-  handleConnectionChange = isConnected => {};
+  handleConnectionChange = isConnected => { };
 
   componentWillUnmount() {
     NetInfo.isConnected.removeEventListener(
@@ -155,6 +155,7 @@ export class WelcomePage extends Component {
     // console.log(i18n.languages[2]);
     return (
       <View style={styles.container}>
+        {/* UI modification starts here */}
         <StatusBar hidden translucent />
         <ImageBackground
           source={require('../assets/bgImage.jpg')}
@@ -173,8 +174,8 @@ export class WelcomePage extends Component {
                     : t('welcome') + ' ' + this.state.username}
                 </Text>
               ) : (
-                <ActivityIndicator />
-              )}
+                  <ActivityIndicator />
+                )}
             </View>
             <TouchableOpacity
               onPress={() => {
@@ -214,7 +215,7 @@ export class WelcomePage extends Component {
             onBackdropPress={() => this.setState({ showModal: false })}
             onSwipe={() => this.setState({ showModal: false })}
             swipeDirection={'left'}
-            //scrollOffset={Platform.OS === 'ios' ? 0 : -24}
+          //scrollOffset={Platform.OS === 'ios' ? 0 : -24}
           >
             <View
               style={[

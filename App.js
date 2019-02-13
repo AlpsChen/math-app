@@ -115,15 +115,15 @@ export default class App extends Component {
   render() {
     console.disableYellowBox = true;
     const { checkedAsyncStorage, isFirstLaunch, initialRoute } = this.state;
-    if (!checkedAsyncStorage) {
-      return null;
-    }
-    if (isFirstLaunch) return <Onboarding />;
-    else if (initialRoute === 'First') return <First />;
-    else if (initialRoute === 'Login') return <Login />;
-    else return null;
+    // if (!checkedAsyncStorage) {
+    //   return null;
+    // }
+    // if (isFirstLaunch) return <Onboarding />;
+    // else if (initialRoute === 'First') return <First />;
+    // else if (initialRoute === 'Login') return <Login />;
+    // else return null;
 
-    // return <Login />;
+    return <Onboarding />;
   }
 }
 

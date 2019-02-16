@@ -195,7 +195,7 @@ export class AccountPageAndroid extends Component {
   async loginFb() {
     this.setState({ isLoading: true });
     Expo.Facebook.logInWithReadPermissionsAsync(appId, {
-      permissions: ['public_profile', 'email', 'user_friends']
+      permissions: ['public_profile', 'email']
     })
       .then(result => {
         if (result.type === 'success') {
@@ -204,8 +204,8 @@ export class AccountPageAndroid extends Component {
           );
           fetch(
             `https://graph.facebook.com/me?access_token=${
-              result.token
-            }&fields=id,first_name,email,about,picture`
+            result.token
+            }&fields=id,first_name,email`
           ).then(response => {
             response.json().then(json => {
               //console.log('b');
@@ -418,7 +418,7 @@ export class AccountPageAndroid extends Component {
                         color="rgba(0, 0, 0, 0.38)"
                         size={25}
                         style={{ backgroundColor: 'transparent' }}
-                        //iconStyle={{ left: -5 }}
+                      //iconStyle={{ left: -5 }}
                       />
                     }
                     value={this.state.username}
